@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん (v2.7)</title>
+    <title>AI学習コーチ - カズくん (v2.8 Debug)</title>
     <style>
         :root {
             --splat-yellow: #E6FF00;
@@ -61,7 +61,7 @@
             overflow-y: auto;
         }
         .math-display { font-size: 18px; font-weight: 900; color: var(--splat-yellow); text-shadow: 2px 2px 0px #000; letter-spacing: 1px; }
-        .math-subtext { font-size: 13px; color: #FFF; line-height: 1.5; background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 12px; border: 4px solid var(--splat-yellow); width: 90%; max-width: 500px; box-sizing: border-box; text-align: left; word-break: break-all; }
+        .math-subtext { font-size: 12px; color: #FFF; line-height: 1.4; background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 12px; border: 4px solid var(--splat-yellow); width: 90%; max-width: 500px; box-sizing: border-box; text-align: left; word-break: break-all; }
         
         #preview-container { display: none; flex-direction: column; align-items: center; gap: 6px; width: 100%; margin-bottom: 4px; }
         #preview-img { max-height: 100px; border-radius: 6px; border: 2px solid var(--splat-yellow); }
@@ -105,23 +105,23 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v2.7</button>
+            <button class="btn-report" id="btn-log">v2.8</button>
         </div>
     </header>
 
     <main>
         <div id="board-container">
             <div class="board-header">
-                <span>COACH BOARD (解説・図解エリア)</span>
+                <span>COACH BOARD (デバッグエリア)</span>
                 <span id="status-badge" style="color: var(--splat-yellow);">待機中</span>
             </div>
             <div id="board-content">
                 <div id="preview-container">
                     <img id="preview-img" alt="プレビュー">
                 </div>
-                <div class="math-display" id="main-title">先生からのメッセージ</div>
+                <div class="math-display" id="main-title">詳細エラーログ</div>
                 <div class="math-subtext" id="coach-speech">
-                    こんにちは！きみのもんだいを見せてね。<br>「カメラ」でノートをうつすか、「質問する」でおしえてね！
+                    ここにエラーの詳細が表示されます。<br>カメラで写真を撮ってみてね！
                 </div>
             </div>
             
@@ -145,7 +145,7 @@
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
-        console.log("Kazu-kun Coach v2.7 loaded successfully.");
+        console.log("Kazu-kun Coach v2.8 loaded successfully.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -172,21 +172,9 @@
             statusBadge.innerText = badgeText;
             if (speechText) {
                 speechElem.innerHTML = speechText;
-                speakText(speechText);
             }
         }
 
-        function speakText(text) {
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
-            const cleanText = text.replace(/<[^>]*>?/gm, '');
-            const utter = new SpeechSynthesisUtterance(cleanText);
-            utter.lang = 'ja-JP';
-            utter.rate = 1.1;
-            window.speechSynthesis.speak(utter);
-        }
-
-        // 現在利用可能な最新の公開モデルを動的にフォールバックさせる仕組み
         async function askGemini(promptText, base64Image = null) {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
@@ -194,24 +182,20 @@
                 return;
             }
 
-            // 確実に存在するモデル名を順に試す仕組み
-            const models = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.5-flash"];
-            let response = null;
-            let usedModel = "";
+            const models = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"];
+            let logs = [];
 
-            setStatus("考え中...", "カズくんが考えているよ...");
+            setStatus("通信中...", "各モデルへの接続をテスト中...");
 
             for (let m of models) {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`;
                 
-                let parts = [{ text: "あなたは小学4年生の算数専用のやさしいAIコーチ「カズくん」です。子供に寄り添い、答えを直接教えるのではなく、ヒントや考え方をわかりやすく短く（3行程度で）解説してください。\n\n" + promptText }];
-                
+                let parts = [{ text: "テスト用プロンプト" }];
                 if (base64Image) {
-                    const base64Data = base64Image.split(',')[1];
                     parts.push({
                         inline_data: {
                             mime_type: "image/jpeg",
-                            data: base64Data
+                            data: base64Image.split(',')[1]
                         }
                     });
                 }
@@ -223,32 +207,23 @@
                         body: JSON.stringify({ contents: [{ parts: parts }] })
                     });
 
+                    const textData = await res.text();
+                    logs.push(`<b>${m}</b>: HTTP ${res.status}<br>${textData.substring(0, 100)}`);
+
                     if (res.ok) {
-                        response = res;
-                        usedModel = m;
-                        break;
+                        const json = JSON.parse(textData);
+                        if (json.candidates && json.candidates[0].content) {
+                            setStatus("成功！", json.candidates[0].content.parts[0].text.replace(/\n/g, '<br>'));
+                            return;
+                        }
                     }
                 } catch (e) {
-                    // 次のモデルへ
+                    logs.push(`<b>${m}</b>: 例外 ${e.message}`);
                 }
             }
 
-            if (!response || !response.ok) {
-                setStatus("HTTPエラー", "利用可能なモデルが見つかりませんでした。APIキーを確認してください。");
-                return;
-            }
-
-            try {
-                const data = await response.json();
-                if (data.candidates && data.candidates[0].content) {
-                    const aiText = data.candidates[0].content.parts[0].text;
-                    setStatus("解説中 (" + usedModel + ")", aiText.replace(/\n/g, '<br>'));
-                } else {
-                    setStatus("データエラー", "レスポンスの形式が違います。");
-                }
-            } catch (err) {
-                setStatus("通信例外エラー", err.message);
-            }
+            // すべて失敗した場合、詳細なログを表示
+            setStatus("全モデル失敗", logs.join("<hr style='border-color:#444'>"));
         }
 
         btnCam.addEventListener('click', async () => {
@@ -287,7 +262,7 @@
             mainTitle.style.display = 'none';
             previewContainer.style.display = 'flex';
             
-            askGemini("このノートに書かれている算数の問題を見て、小4の子に向けて解き方のヒントや考え方を優しく教えてください。", capturedBase64);
+            askGemini("このノートの算数の問題を見てください。", capturedBase64);
         });
 
         closeCamBtn.addEventListener('click', () => {
@@ -306,38 +281,13 @@
         document.getElementById('btn-q').addEventListener('click', () => {
             previewContainer.style.display = 'none';
             mainTitle.style.display = 'block';
-            
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechRecognition) {
-                const recognition = new SpeechRecognition();
-                recognition.lang = 'ja-JP';
-                recognition.interimResults = false;
-
-                recognition.onstart = () => {
-                    setStatus("聞き取り中...", "「先生、ここがわからないよ！」ってマイクに向かって話してね……");
-                };
-
-                recognition.onresult = (event) => {
-                    const speechResult = event.results[0][0].transcript;
-                    askGemini(`生徒からの質問: ${speechResult}`);
-                };
-
-                recognition.onerror = () => {
-                    setStatus("聞き取り失敗", "うまく聞き取れなかったから、もう一度ボタンを押して話してね！");
-                };
-
-                recognition.start();
-            } else {
-                setStatus("考え中...", "音声認識が使えない環境みたい。テキストで質問してね！");
-                askGemini("小4の算数について質問があります。わかりやすく教えてください。");
-            }
+            askGemini("小4の算数について質問があります。");
         });
 
         document.getElementById('btn-ok').addEventListener('click', () => {
-            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             previewContainer.style.display = 'none';
             mainTitle.style.display = 'block';
-            setStatus("待機中", "すごい！そのちょうしだね！ほかの問題もチャレンジしてみよう！");
+            setStatus("待機中", "すごい！そのちょうしだね！");
         });
     </script>
 </body>
