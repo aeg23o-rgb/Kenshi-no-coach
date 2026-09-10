@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v7.6)</title>
+    <title>AI学習コーチ - カズ先生 (v8.0)</title>
     <script type="importmap">
       {
         "imports": {
@@ -50,17 +50,17 @@
             padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;
         }
         main {
-            flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 8px;
+            flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 6px;
             overflow: hidden; position: relative;
         }
         
         #user-comment-frame {
             background: #1A1F30; border: 2px solid var(--splat-cyan);
-            border-radius: 12px; padding: 6px 10px; display: none; align-items: center; gap: 8px;
+            border-radius: 12px; padding: 4px 10px; display: none; align-items: center; gap: 8px;
             box-shadow: 0 2px 8px rgba(0,240,255,0.2);
         }
         .user-comment-label { font-size: 11px; color: var(--splat-cyan); font-weight: bold; white-space: nowrap; }
-        .user-comment-text { font-size: 13px; color: #FFF; word-break: break-all; }
+        .user-comment-text { font-size: 12px; color: #FFF; word-break: break-all; }
 
         #board-container {
             flex: 1; background: var(--splat-card); border-radius: 16px;
@@ -68,46 +68,58 @@
             display: flex; flex-direction: column; position: relative; overflow: hidden;
         }
         .board-header {
-            padding: 6px 12px; background: rgba(0,0,0,0.3); font-size: 11px;
+            padding: 4px 12px; background: rgba(0,0,0,0.3); font-size: 11px;
             color: #A0A5C0; font-weight: bold; border-bottom: 2px solid #2A1F45;
             display: flex; justify-content: space-between; align-items: center;
         }
         #board-content {
             flex: 1; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; padding: 12px; text-align: center; gap: 8px; position: relative;
+            justify-content: flex-start; padding: 8px; text-align: center; gap: 6px; position: relative;
             overflow-y: auto;
         }
         
-        #preview-container { display: none; flex-direction: column; align-items: center; gap: 4px; width: 100%; }
-        #preview-img { max-height: 70px; border-radius: 6px; border: 2px solid var(--splat-yellow); }
+        /* マンガ風演出・アバター＆ビジュアルエリア */
+        .manga-stage {
+            display: flex; gap: 10px; align-items: center; width: 94%; max-width: 550px;
+            background: rgba(0,0,0,0.3); border: 2px solid var(--splat-purple); border-radius: 12px; padding: 6px;
+        }
+        #teacher-avatar-svg { width: 60px; height: 60px; flex-shrink: 0; }
+        #visual-container {
+            display: none; width: 100%; max-width: 550px; background: #111420;
+            border: 2px dashed var(--splat-cyan); border-radius: 10px; padding: 6px; align-items: center; justify-content: center;
+        }
+        #visual-svg { width: 100%; height: 110px; }
 
-        .board-text-title { font-size: 16px; font-weight: 900; color: var(--splat-yellow); text-shadow: 1px 1px 0px #000; }
+        #preview-container { display: none; flex-direction: column; align-items: center; gap: 4px; width: 100%; }
+        #preview-img { max-height: 50px; border-radius: 6px; border: 2px solid var(--splat-yellow); }
+
+        .board-text-title { font-size: 14px; font-weight: 900; color: var(--splat-yellow); text-shadow: 1px 1px 0px #000; align-self: flex-start; margin-left: 3%; }
         .board-text-body { 
-            font-size: 18px; color: #FFF; line-height: 1.5; 
+            font-size: 15px; color: #FFF; line-height: 1.4; 
             text-align: left; width: 94%; max-width: 550px; 
-            padding: 12px; box-sizing: border-box; 
-            background: rgba(0,0,0,0.2); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1);
-            font-weight: bold;
+            padding: 10px; box-sizing: border-box; 
+            background: rgba(0,0,0,0.25); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1);
+            font-weight: bold; min-height: 60px;
         }
         
         #coaching-control-bar {
-            display: none; padding: 8px; background: rgba(0,0,0,0.6);
-            border-top: 2px solid var(--splat-yellow); gap: 8px; justify-content: center; flex-wrap: wrap;
+            display: none; padding: 6px; background: rgba(0,0,0,0.6);
+            border-top: 2px solid var(--splat-yellow); gap: 6px; justify-content: center; flex-wrap: wrap;
             z-index: 10;
         }
         .btn-coach {
-            border: none; border-radius: 12px; font-weight: 900; font-size: 12px; cursor: pointer;
-            padding: 10px 14px; box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+            border: none; border-radius: 12px; font-weight: 900; font-size: 11px; cursor: pointer;
+            padding: 8px 12px; box-shadow: 0 2px 0 rgba(0,0,0,0.3);
         }
         .btn-coach:disabled { opacity: 0.5; cursor: not-allowed; }
         #btn-easier { background: var(--splat-cyan); color: #111420; }
         #btn-next-step { background: var(--splat-yellow); color: #111420; }
         #btn-solved { background: var(--splat-pink); color: #FFF; }
 
-        .action-bar { padding: 4px; display: flex; gap: 12px; justify-content: center; }
+        .action-bar { padding: 4px; display: flex; gap: 10px; justify-content: center; }
         .btn-action {
-            border: none; border-radius: 20px; font-weight: 900; font-size: 13px; cursor: pointer;
-            padding: 12px 20px; color: #111420; display: flex; align-items: center; gap: 4px;
+            border: none; border-radius: 20px; font-weight: 900; font-size: 12px; cursor: pointer;
+            padding: 10px 18px; color: #111420; display: flex; align-items: center; gap: 4px;
             box-shadow: 0 4px 0 rgba(0,0,0,0.3); transition: transform 0.1s;
         }
         .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -124,6 +136,13 @@
         .modal-box { width: 90%; max-width: 420px; background: var(--splat-card); border: 2px solid var(--splat-yellow); border-radius: 12px; padding: 16px; max-height: 70vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; text-align: center; }
         .history-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-align: left; }
         .history-item:hover { background: rgba(110,0,255,0.3); }
+
+        /* タイピング用カーソル */
+        .typing-cursor::after {
+            content: '✏️';
+            animation: blink 0.6s infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     </style>
 </head>
 <body>
@@ -143,7 +162,7 @@
             </svg>
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数コーチング (v7.6)</span>
+                <span class="character-sub">小4 算数コーチング (v8.0)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -165,6 +184,24 @@
             </div>
             
             <div id="board-content">
+                <div class="manga-stage">
+                    <svg id="teacher-avatar-svg" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="#6E00FF" stroke="#E6FF00" stroke-width="6"/>
+                        <!-- 目 -->
+                        <circle cx="35" cy="40" r="7" fill="#E6FF00" id="eye-l"/>
+                        <circle cx="65" cy="40" r="7" fill="#E6FF00" id="eye-r"/>
+                        <!-- 口 (笑顔) -->
+                        <path id="mouth-path" d="M 30 60 Q 50 80 70 60" stroke="#E6FF00" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    </svg>
+                    <div style="font-size: 11px; color: var(--splat-yellow); text-align: left; font-weight: bold;">
+                        カズ先生<br><span id="teacher-mood" style="color:#FFF; font-size:10px;">「一緒にがんばろう！」</span>
+                    </div>
+                </div>
+
+                <div id="visual-container">
+                    <svg id="visual-svg" viewBox="0 0 400 100"></svg>
+                </div>
+
                 <div id="preview-container">
                     <img id="preview-img" alt="プレビュー">
                 </div>
@@ -219,7 +256,7 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        console.log("Kazu-sensei Board v7.6 loaded.");
+        console.log("Kazu-sensei Board v8.0 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -235,6 +272,9 @@
         const sessionTitleBadge = document.getElementById('session-title-badge');
         const userCommentFrame = document.getElementById('user-comment-frame');
         const userCommentText = document.getElementById('user-comment-text');
+        const teacherMood = document.getElementById('teacher-mood');
+        const visualContainer = document.getElementById('visual-container');
+        const visualSvg = document.getElementById('visual-svg');
         
         const btnCam = document.getElementById('btn-cam');
         const btnQ = document.getElementById('btn-q');
@@ -262,11 +302,80 @@
         let currentSessionTitle = '新規の相談';
         let chatHistory = []; 
         let mediaStream = null;
+        let typingTimer = null;
 
         function setButtonsEnabled(enabled) {
             [btnCam, btnQ, btnEasier, btnNextStep].forEach(btn => {
                 if (btn) btn.disabled = !enabled;
             });
+        }
+
+        // 表情の変化（normal, thinking, happy）
+        function setTeacherMood(mood, moodText) {
+            teacherMood.innerText = `「${moodText}」`;
+            const mouth = document.getElementById('mouth-path');
+            if (mood === 'thinking') {
+                mouth.setAttribute('d', 'M 35 68 Q 50 55 65 68');
+            } else if (mood === 'happy') {
+                mouth.setAttribute('d', 'M 30 55 Q 50 85 70 55');
+            } else {
+                mouth.setAttribute('d', 'M 30 60 Q 50 80 70 60');
+            }
+        }
+
+        // 動的SVGイラスト描画
+        function renderVisualDiagram(type) {
+            visualSvg.innerHTML = '';
+            if (!type || type === 'none') {
+                visualContainer.style.display = 'none';
+                return;
+            }
+            visualContainer.style.display = 'flex';
+
+            if (type === 'bars' || type === 'line') {
+                // 線分図の例
+                visualSvg.innerHTML = `
+                    <text x="20" y="25" fill="#00F0FF" font-size="12" font-family="sans-serif">【線分図イメージ】</text>
+                    <line x1="20" y1="50" x2="380" y2="50" stroke="#E6FF00" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="20" y1="40" x2="20" y2="60" stroke="#E6FF00" stroke-width="4"/>
+                    <line x1="380" y1="40" x2="380" y2="60" stroke="#E6FF00" stroke-width="4"/>
+                    <line x1="200" y1="35" x2="200" y2="65" stroke="#FF007F" stroke-width="3" stroke-dasharray="4"/>
+                    <text x="100" y="75" fill="#FFF" font-size="11">全体 (?)</text>
+                `;
+            } else if (type === 'blocks' || type === 'count') {
+                // ブロックやものの個数の例
+                let rects = '';
+                for(let i=0; i<5; i++) {
+                    rects += `<rect x="${30 + i*65}" y="30" width="50" height="40" fill="#6E00FF" stroke="#E6FF00" stroke-width="2" rx="6"/>`;
+                    rects += `<text x="${50 + i*65}" y="55" fill="#FFF" font-size="14">${i+1}</text>`;
+                }
+                visualSvg.innerHTML = `<text x="20" y="20" fill="#00F0FF" font-size="12">【ブロック・数図】</text>` + rects;
+            }
+        }
+
+        // 手書き風タイピングアニメーション
+        function typeWriterEffect(htmlText, callback) {
+            if (typingTimer) clearInterval(typingTimer);
+            boardSpeech.innerHTML = '';
+            boardSpeech.classList.add('typing-cursor');
+
+            // タグを保持しつつ文字を置換するため、簡易的にテキスト化または全置換
+            // ここではタグ（<br>等）をいったんプレーンテキスト化して一文字ずつ出すか、HTMLごとパースする
+            const plainText = htmlText.replace(/<br>/g, '\n');
+            let charIndex = 0;
+            
+            typingTimer = setInterval(() => {
+                if (charIndex < plainText.length) {
+                    const currentStr = plainText.substring(0, charIndex + 1).replace(/\n/g, '<br>');
+                    boardSpeech.innerHTML = currentStr;
+                    charIndex++;
+                } else {
+                    clearInterval(typingTimer);
+                    boardSpeech.classList.remove('typing-cursor');
+                    boardSpeech.innerHTML = htmlText; // 最終的に元のHTMLを復元
+                    if (callback) callback();
+                }
+            }, 25);
         }
 
         function saveCurrentSession() {
@@ -305,6 +414,7 @@
                     speakText(boardSpeech.innerText);
                     historyModal.style.display = 'none';
                     coachingControlBar.style.display = 'flex';
+                    setTeacherMood('happy', 'よく戻ってきてくれたね！');
                     updateBoard("伴走中（履歴から再開）", "カズ先生のホワイトボード解説");
                 };
                 historyListContainer.appendChild(div);
@@ -321,6 +431,8 @@
             userCommentFrame.style.display = 'none';
             coachingControlBar.style.display = 'none';
             boardTitle.style.display = 'block';
+            visualContainer.style.display = 'none';
+            setTeacherMood('normal', '新しい問題だね！');
             updateBoard("新規ルーム", "カズ先生からのメッセージ", "新しい相談ルームだよ！解きたい問題を教えてね。");
         });
 
@@ -333,7 +445,7 @@
             historyModal.style.display = 'none';
         });
 
-        function updateBoard(statusText, titleText, speechText = null, userText = null) {
+        function updateBoard(statusText, titleText, speechText = null, userText = null, mood = 'normal', moodText = '一緒にがんばろう！', diagType = 'none') {
             boardStatus.innerText = `【ステータス：${statusText}】`;
             if (titleText) boardTitle.innerText = titleText;
             
@@ -344,9 +456,13 @@
                 userCommentFrame.style.display = 'none';
             }
 
+            setTeacherMood(mood, moodText);
+            renderVisualDiagram(diagType);
+
             if (speechText) {
-                boardSpeech.innerHTML = speechText;
-                speakText(speechText);
+                typeWriterEffect(speechText, () => {
+                    speakText(speechText);
+                });
                 coachingControlBar.style.display = 'flex';
             }
         }
@@ -354,29 +470,25 @@
         function speakText(text) {
             if (!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
-            
             const cleanText = text.replace(/<[^>]*>?/gm, '');
             const utter = new SpeechSynthesisUtterance(cleanText);
             utter.lang = 'ja-JP';
             utter.rate = 1.05; 
             utter.pitch = 1.0;
-            
-            // iOS等での確実な音声発話のためのトリガー
             window.speechSynthesis.speak(utter);
         }
 
         async function askGemini(userInputText, base64Image = null, userDisplayText = null) {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
-                updateBoard("エラー", "APIキー未入力", "上の欄に Gemini APIキー を入力してね！", userDisplayText);
+                updateBoard("エラー", "APIキー未入力", "上の欄に Gemini APIキー を入力してね！", userDisplayText, 'normal', 'APIキーを入れてね');
                 return;
             }
 
             setButtonsEnabled(false);
+            setTeacherMood('thinking', 'うーん、どうアプローチしようかな…');
 
             try {
-                updateBoard("伴走・思考中...", "カズ先生が考えています...", null, userDisplayText);
-                
                 const ai = new GoogleGenAI({ apiKey: apiKey });
 
                 const systemInstruction = `あなたは小学4年生の算数専用の、粘り強く寄り添う熱血でやさしい指導者「カズ先生」です。
@@ -384,7 +496,7 @@
 1. **答えや計算結果を直接教えないこと**。
 2. 子供が自分の足で答えにたどり着くまで何段階にも分けて伴走する。
 3. ホワイトボードに書くように、大きな文字でわかりやすく3行程度でまとめる。
-4. 会話の文脈を維持する。`;
+4. 返答の最後に必ず【図解:bars】または【図解:blocks】または【図解:none】のいずれかを含めて、どんな図解を表示するか指定すること。`;
 
                 let parts = [];
                 if (base64Image) {
@@ -428,20 +540,26 @@
                 });
 
                 if (response && response.text) {
-                    const replyText = response.text.replace(/\n/g, '<br>');
+                    let rawText = response.text;
+                    let diagType = 'none';
+                    if (rawText.includes('【図解:bars】')) { diagType = 'bars'; rawText = rawText.replace('【図解:bars】', ''); }
+                    else if (rawText.includes('【図解:blocks】')) { diagType = 'blocks'; rawText = rawText.replace('【図解:blocks】', ''); }
+                    else { rawText = rawText.replace(/【図解:.*?】/g, ''); }
+
+                    const replyText = rawText.trim().replace(/\n/g, '<br>');
                     chatHistory.push({ role: 'model', parts: [{ text: response.text }] });
                     
-                    updateBoard("伴走コーチング中", "カズ先生のホワイトボード解説", replyText, userDisplayText);
+                    updateBoard("伴走コーチング中", "カズ先生のホワイトボード解説", replyText, userDisplayText, 'happy', 'ひらめいたよ！', diagType);
                     saveCurrentSession();
                 } else {
-                    updateBoard("エラー", "データなし", "ホワイトボードに文字を書けませんでした。", userDisplayText);
+                    updateBoard("エラー", "データなし", "ホワイトボードに文字を書けませんでした。", userDisplayText, 'normal', '困ったな…');
                 }
             } catch (err) {
                 console.error("SDK Error:", err);
                 if (err.message && err.message.includes("429")) {
-                    updateBoard("制限オーバー", "少し待ってね", "立て続けに質問したため、無料枠の制限に達しました。30秒ほど待ってからもう一度押してね！", userDisplayText);
+                    updateBoard("制限オーバー", "少し待ってね", "立て続けに質問したため、無料枠の制限に達しました。30秒ほど待ってからもう一度押してね！", userDisplayText, 'normal', '少し休憩しよう');
                 } else {
-                    updateBoard("エラー発生", "通信エラー", `詳細: ${err.message}`, userDisplayText);
+                    updateBoard("エラー発生", "通信エラー", `詳細: ${err.message}`, userDisplayText, 'normal', 'エラーが起きちゃった');
                 }
             } finally {
                 setButtonsEnabled(true);
@@ -454,14 +572,14 @@
                     alert('お使いのブラウザはカメラに対応していません。');
                     return;
                 }
-                updateBoard("カメラ起動中", "問題の読み取り", "ノートをカメラにうつしてね！");
+                updateBoard("カメラ起動中", "問題の読み取り", "ノートをカメラにうつしてね！", null, 'normal', 'カメラで問題を見せてね');
                 cameraModal.style.display = 'flex';
                 mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
                 cameraVideo.srcObject = mediaStream;
             } catch (err) {
                 alert('カメラをひらけませんでした: ' + err.message);
                 cameraModal.style.display = 'none';
-                updateBoard("待機中", "カズ先生からのメッセージ", "カメラが開けなかったよ。");
+                updateBoard("待機中", "カズ先生からのメッセージ", "カメラが開けなかったよ。", null, 'normal', 'カメラが開けないよ');
             }
         });
 
@@ -493,7 +611,7 @@
                 mediaStream = null;
             }
             cameraModal.style.display = 'none';
-            updateBoard("待機中", "カズ先生からのメッセージ", "カメラを閉じました。");
+            updateBoard("待機中", "カズ先生からのメッセージ", "カメラを閉じました。", null, 'normal', 'いつでも聞いてね');
         });
 
         btnQ.addEventListener('click', () => {
@@ -507,7 +625,7 @@
                 recognition.interimResults = false;
 
                 recognition.onstart = () => {
-                    updateBoard("音声聞き取り中", "質問を受け付けています", "マイクに向かって話してね……");
+                    updateBoard("音声聞き取り中", "質問を受け付けています", "マイクに向かって話してね……", null, 'thinking', '耳をすませているよ…');
                 };
 
                 recognition.onresult = (event) => {
@@ -516,12 +634,12 @@
                 };
 
                 recognition.onerror = () => {
-                    updateBoard("聞き取り失敗", "もう一度お試しください", "うまく聞き取れなかったよ。もう一度マイクボタンを押して話してね！");
+                    updateBoard("聞き取り失敗", "もう一度お試しください", "うまく聞き取れなかったよ。もう一度マイクボタンを押して話してね！", null, 'normal', 'もう一度教えて！');
                 };
 
                 recognition.start();
             } else {
-                updateBoard("テキスト入力モード", "質問受付", "音声認識が使えない環境のため、テキストで質問してください。");
+                updateBoard("テキスト入力モード", "質問受付", "音声認識が使えない環境のため、テキストで質問してください。", null, 'normal', 'テキストで教えてね');
                 askGemini("小4の算数について質問があります。答えを言わずにヒントを教えてください。", null, "テキストで質問しました");
             }
         });
@@ -542,10 +660,11 @@
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             solvedModal.style.display = 'none';
             previewContainer.style.display = 'none';
+            visualContainer.style.display = 'none';
             boardTitle.style.display = 'block';
             
             const cheers = "すごい！今回の相談はこれにてクリア！しっかり相談履歴に保存したよ。次の問題もがんばろう！";
-            updateBoard("完了・保存済", "カズ先生からのメッセージ", cheers, "わかった！相談を終了して保存するよ");
+            updateBoard("完了・保存済", "カズ先生からのメッセージ", cheers, "わかった！相談を終了して保存するよ", 'happy', 'お疲れ様！大正解！');
             
             chatHistory.push({ role: 'user', parts: [{ text: "わかった！" }] });
             chatHistory.push({ role: 'model', parts: [{ text: cheers }] });
@@ -560,7 +679,7 @@
 
         btnContinueSession.addEventListener('click', () => {
             solvedModal.style.display = 'none';
-            updateBoard("伴走継続中", "カズ先生のホワイトボード解説", "よし、この調子でどんどん質問してね！次の疑問は何かな？", "引き続きこの相談を続ける");
+            updateBoard("伴走継続中", "カズ先生のホワイトボード解説", "よし、この調子でどんどん質問してね！次の疑問は何かな？", "引き続きこの相談を続ける", 'happy', 'まだまだいけるよ！');
         });
     </script>
 </body>
