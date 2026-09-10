@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v7.4 安定版)</title>
+    <title>AI学習コーチ - カズ先生 (v7.5)</title>
     <script type="importmap">
       {
         "imports": {
@@ -141,7 +141,7 @@
             </svg>
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数コーチング (v7.4)</span>
+                <span class="character-sub">小4 算数コーチング (v7.5)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -217,7 +217,7 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        console.log("Kazu-sensei Board v7.4 loaded.");
+        console.log("Kazu-sensei Board v7.5 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -374,7 +374,6 @@
 3. ホワイトボードに書くように、大きな文字でわかりやすく3行程度でまとめる。
 4. 会話の文脈を維持する。`;
 
-                // テキストと画像データを安全にパーツ配列へ格納
                 let parts = [];
                 if (base64Image) {
                     parts.push({
@@ -398,7 +397,6 @@
                     sessionTitleBadge.innerText = `テーマ: ${currentSessionTitle}`;
                 }
 
-                // 過去のやり取りも含めて、テキスト主体の安全なcontents構造に変換して送信
                 const cleanContents = chatHistory.map(turn => ({
                     role: turn.role,
                     parts: turn.parts.map(p => {
@@ -410,7 +408,7 @@
                 }));
 
                 const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
+                    model: 'gemini-3.6-flash',
                     contents: cleanContents,
                     config: {
                         systemInstruction: systemInstruction,
