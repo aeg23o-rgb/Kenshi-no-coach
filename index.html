@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん (v3.2)</title>
+    <title>AI学習コーチ - カズくん (v3.3)</title>
     <style>
         :root {
             --splat-yellow: #E6FF00;
@@ -105,7 +105,7 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v3.2</button>
+            <button class="btn-report" id="btn-log">v3.3</button>
         </div>
     </header>
 
@@ -145,7 +145,7 @@
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
-        console.log("Kazu-kun Coach v3.2 loaded successfully.");
+        console.log("Kazu-kun Coach v3.3 loaded successfully.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -193,14 +193,19 @@
                 return;
             }
 
-            // 正しいモデル名 (gemini-1.5-flash) を指定
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            // 確実に現在サポートされているモデル名に変更 (gemini-2.5-flash または gemini-1.5-flash)
+            // ここでは最新の安定版モデル名を使用します
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
             
-            let parts = [{ text: "あなたは小学4年生の算数専用のやさしいAIコーチ「カズくん」です。子供に寄り添い、答えを直接教えるのではなく、ヒントや考え方をわかりやすく短く（3行程度で）解説してください。\n\n" + promptText }];
+            let contents = [{
+                parts: [
+                    { text: "あなたは小学4年生の算数専用のやさしいAIコーチ「カズくん」です。子供に寄り添い、答えを直接教えるのではなく、ヒントや考え方をわかりやすく短く（3行程度で）解説してください。\n\n" + promptText }
+                ]
+            }];
             
             if (base64Image) {
                 const base64Data = base64Image.split(',')[1];
-                parts.push({
+                contents[0].parts.push({
                     inline_data: {
                         mime_type: "image/jpeg",
                         data: base64Data
@@ -213,11 +218,12 @@
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: parts }] })
+                    body: JSON.stringify({ contents: contents })
                 });
 
                 if (!response.ok) {
                     const errData = await response.text();
+                    console.error("API Error Response:", errData);
                     setStatus("HTTPエラー " + response.status, `詳細: ${errData.substring(0, 150)}`);
                     return;
                 }
