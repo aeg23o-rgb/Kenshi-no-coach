@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v7.0 伴走コーチング＆アクション完備)</title>
+    <title>AI学習コーチ - カズ先生 (v7.1 ボタン配置修正版)</title>
     <script type="importmap">
       {
         "imports": {
@@ -54,16 +54,14 @@
             overflow: hidden; position: relative;
         }
         
-        /* 上段：自分の発言を表示するフレーム */
         #user-comment-frame {
             background: #1A1F30; border: 2px solid var(--splat-cyan);
-            border-radius: 12px; padding: 8px 12px; display: none; align-items: center; gap: 8px;
+            border-radius: 12px; padding: 6px 10px; display: none; align-items: center; gap: 8px;
             box-shadow: 0 2px 8px rgba(0,240,255,0.2);
         }
         .user-comment-label { font-size: 11px; color: var(--splat-cyan); font-weight: bold; white-space: nowrap; }
-        .user-comment-text { font-size: 14px; color: #FFF; word-break: break-all; }
+        .user-comment-text { font-size: 13px; color: #FFF; word-break: break-all; }
 
-        /* 下段：メインのホワイトボード（板書）フレーム */
         #board-container {
             flex: 1; background: var(--splat-card); border-radius: 16px;
             border: 4px solid var(--splat-yellow); box-shadow: 0 4px 16px rgba(110,0,255,0.3);
@@ -76,47 +74,47 @@
         }
         #board-content {
             flex: 1; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; padding: 16px; text-align: center; gap: 12px; position: relative;
+            justify-content: center; padding: 12px; text-align: center; gap: 8px; position: relative;
             overflow-y: auto;
         }
         
-        #preview-container { display: none; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
-        #preview-img { max-height: 80px; border-radius: 6px; border: 2px solid var(--splat-yellow); }
+        #preview-container { display: none; flex-direction: column; align-items: center; gap: 4px; width: 100%; }
+        #preview-img { max-height: 70px; border-radius: 6px; border: 2px solid var(--splat-yellow); }
 
-        /* ホワイトボード内の文字 */
-        .board-text-title { font-size: 18px; font-weight: 900; color: var(--splat-yellow); text-shadow: 1px 1px 0px #000; letter-spacing: 1px; }
+        .board-text-title { font-size: 16px; font-weight: 900; color: var(--splat-yellow); text-shadow: 1px 1px 0px #000; }
         .board-text-body { 
-            font-size: 20px; color: #FFF; line-height: 1.6; 
-            text-align: left; width: 92%; max-width: 550px; 
-            padding: 14px; box-sizing: border-box; 
+            font-size: 18px; color: #FFF; line-height: 1.5; 
+            text-align: left; width: 94%; max-width: 550px; 
+            padding: 12px; box-sizing: border-box; 
             background: rgba(0,0,0,0.2); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1);
             font-weight: bold;
         }
         
-        /* アクションバー（初期の入力用） */
+        /* ボード内下部に常駐させる伴走アクションコントロールバー */
+        #coaching-control-bar {
+            display: none; padding: 8px; background: rgba(0,0,0,0.5);
+            border-top: 2px solid var(--splat-yellow); gap: 6px; justify-content: center; flex-wrap: wrap;
+            z-index: 10;
+        }
+        .btn-coach {
+            border: none; border-radius: 10px; font-weight: 900; font-size: 11px; cursor: pointer;
+            padding: 8px 12px; color: #111420; box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+        }
+        #btn-easier { background: var(--splat-cyan); }
+        #btn-next-step { background: var(--splat-yellow); }
+        #btn-solved { background: var(--splat-pink); color: #FFF; }
+
+        /* 通常のスタート用アクションバー */
         .action-bar { padding: 0 4px 4px; display: flex; gap: 8px; justify-content: center; }
         .btn-action {
             border: none; border-radius: 20px; font-weight: 900; font-size: 13px; cursor: pointer;
-            padding: 10px 14px; color: #111420; display: flex; align-items: center; gap: 4px;
+            padding: 10px 16px; color: #111420; display: flex; align-items: center; gap: 4px;
             box-shadow: 0 4px 0 rgba(0,0,0,0.3); transition: transform 0.1s;
         }
         .btn-action:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
         #btn-q { background: var(--splat-yellow); }
         #btn-cam { background: var(--splat-cyan); }
         #btn-ok { background: var(--splat-pink); color: #FFF; }
-
-        /* 伴走中の詳細コントロールバー（先生の返答後に表示） */
-        #coaching-control-bar {
-            display: none; padding: 6px; background: rgba(0,0,0,0.4);
-            border-top: 2px solid #2A1F45; gap: 6px; justify-content: center; flex-wrap: wrap;
-        }
-        .btn-coach {
-            border: none; border-radius: 12px; font-weight: bold; font-size: 11px; cursor: pointer;
-            padding: 8px 10px; color: #FFF; box-shadow: 0 2px 0 rgba(0,0,0,0.3);
-        }
-        #btn-easier { background: var(--splat-cyan); color: #111420; }
-        #btn-next-step { background: var(--splat-yellow); color: #111420; }
-        #btn-solved { background: var(--splat-pink); }
         
         /* モーダル共通 */
         .modal-overlay {
@@ -125,7 +123,6 @@
         }
         #camera-video { width: 90%; max-width: 400px; max-height: 60vh; border-radius: 12px; border: 2px solid var(--splat-yellow); object-fit: cover; }
         
-        /* 履歴・完了確認モーダルの中身 */
         .modal-box { width: 90%; max-width: 420px; background: var(--splat-card); border: 2px solid var(--splat-yellow); border-radius: 12px; padding: 16px; max-height: 70vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; text-align: center; }
         .history-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-align: left; }
         .history-item:hover { background: rgba(110,0,255,0.3); }
@@ -148,7 +145,7 @@
             </svg>
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数コーチング (v7.0)</span>
+                <span class="character-sub">小4 算数コーチング (v7.1)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -158,7 +155,6 @@
     </header>
 
     <main>
-        <!-- 自分の発言を表示するフレーム -->
         <div id="user-comment-frame">
             <span class="user-comment-label">🗣️ あなた:</span>
             <span class="user-comment-text" id="user-comment-text"></span>
@@ -169,6 +165,7 @@
                 <span id="board-status">【ステータス：伴走待機中】</span>
                 <span id="session-title-badge">テーマ: 新規相談</span>
             </div>
+            
             <div id="board-content">
                 <div id="preview-container">
                     <img id="preview-img" alt="プレビュー">
@@ -181,7 +178,7 @@
                 </div>
             </div>
             
-            <!-- 伴走中の詳細操作バー（先生が話し始めたら表示） -->
+            <!-- 先生が答えた後にホワイトボード下部に現れる伴走アクションボタン群 -->
             <div id="coaching-control-bar">
                 <button class="btn-coach" id="btn-easier">💡 もっとわかりやすく</button>
                 <button class="btn-coach" id="btn-next-step">➡️ つぎへ進む</button>
@@ -206,7 +203,7 @@
                 </div>
             </div>
 
-            <!-- 「わかった！」押したときの選択肢モーダル -->
+            <!-- 「わかった！」の選択肢モーダル -->
             <div id="solved-modal" class="modal-overlay">
                 <div class="modal-box">
                     <div style="font-weight:900; color:var(--splat-yellow); font-size:16px;">よくがんばったね！🎉</div>
@@ -229,7 +226,7 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        console.log("Kazu-sensei Board v7.0 loaded.");
+        console.log("Kazu-sensei Board v7.1 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -268,6 +265,7 @@
         let currentSessionId = 'session_' + Date.now();
         let currentSessionTitle = '新規の相談';
         let chatHistory = []; 
+        let mediaStream = null;
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
@@ -347,7 +345,7 @@
             if (speechText) {
                 boardSpeech.innerHTML = speechText;
                 speakText(speechText);
-                coachingControlBar.style.display = 'flex'; // 先生が答えたら操作バーを出す
+                coachingControlBar.style.display = 'flex'; // 先生が答えたら操作バーを出現させる
             }
         }
 
@@ -385,7 +383,6 @@
 3. ホワイトボードに書くように、大きな文字でわかりやすく3行程度でまとめる。
 4. 会話の文脈を維持する。`;
 
-                // 正しいパーツ構成で履歴に積む（エラー対策済み）
                 let currentParts = [];
                 if (base64Image) {
                     const base64Data = base64Image.split(',')[1];
@@ -428,7 +425,6 @@
             }
         }
 
-        // カメラ・マイク処理
         btnCam.addEventListener('click', async () => {
             try {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -507,7 +503,7 @@
             }
         });
 
-        // 3つの伴走アクションボタン
+        // 3つの伴走アクションボタンの挙動
         document.getElementById('btn-easier').addEventListener('click', () => {
             askGemini("今のヒントがちょっと難しかったよ。もっと身近な例え話や、別の噛み砕いた解説を教えて！", null, "もっとわかりやすく教えて！");
         });
@@ -524,7 +520,6 @@
             solvedModal.style.display = 'flex';
         });
 
-        // 完了モーダルの選択肢
         btnEndSession.addEventListener('click', () => {
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             solvedModal.style.display = 'none';
@@ -539,7 +534,6 @@
             saveCurrentSession();
             
             coachingControlBar.style.display = 'none';
-            // 新規セッションに切り替え
             currentSessionId = 'session_' + Date.now();
             currentSessionTitle = '新規の相談';
             chatHistory = [];
