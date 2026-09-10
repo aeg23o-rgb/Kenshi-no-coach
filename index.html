@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v7.5)</title>
+    <title>AI学習コーチ - カズ先生 (v7.6)</title>
     <script type="importmap">
       {
         "imports": {
@@ -99,6 +99,7 @@
             border: none; border-radius: 12px; font-weight: 900; font-size: 12px; cursor: pointer;
             padding: 10px 14px; box-shadow: 0 2px 0 rgba(0,0,0,0.3);
         }
+        .btn-coach:disabled { opacity: 0.5; cursor: not-allowed; }
         #btn-easier { background: var(--splat-cyan); color: #111420; }
         #btn-next-step { background: var(--splat-yellow); color: #111420; }
         #btn-solved { background: var(--splat-pink); color: #FFF; }
@@ -109,7 +110,8 @@
             padding: 12px 20px; color: #111420; display: flex; align-items: center; gap: 4px;
             box-shadow: 0 4px 0 rgba(0,0,0,0.3); transition: transform 0.1s;
         }
-        .btn-action:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-action:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
         #btn-q { background: var(--splat-yellow); }
         #btn-cam { background: var(--splat-cyan); }
         
@@ -141,7 +143,7 @@
             </svg>
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数コーチング (v7.5)</span>
+                <span class="character-sub">小4 算数コーチング (v7.6)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -217,7 +219,7 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        console.log("Kazu-sensei Board v7.5 loaded.");
+        console.log("Kazu-sensei Board v7.6 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -235,6 +237,7 @@
         const userCommentText = document.getElementById('user-comment-text');
         
         const btnCam = document.getElementById('btn-cam');
+        const btnQ = document.getElementById('btn-q');
         const cameraModal = document.getElementById('camera-modal');
         const cameraVideo = document.getElementById('camera-video');
         const snapBtn = document.getElementById('snap-btn');
@@ -252,11 +255,19 @@
         const btnEndSession = document.getElementById('btn-end-session');
         const btnContinueSession = document.getElementById('btn-continue-session');
         const coachingControlBar = document.getElementById('coaching-control-bar');
+        const btnEasier = document.getElementById('btn-easier');
+        const btnNextStep = document.getElementById('btn-next-step');
 
         let currentSessionId = 'session_' + Date.now();
         let currentSessionTitle = '新規の相談';
         let chatHistory = []; 
         let mediaStream = null;
+
+        function setButtonsEnabled(enabled) {
+            [btnCam, btnQ, btnEasier, btnNextStep].forEach(btn => {
+                if (btn) btn.disabled = !enabled;
+            });
+        }
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
@@ -350,9 +361,8 @@
             utter.rate = 1.05; 
             utter.pitch = 1.0;
             
-            setTimeout(() => {
-                window.speechSynthesis.speak(utter);
-            }, 100);
+            // iOS等での確実な音声発話のためのトリガー
+            window.speechSynthesis.speak(utter);
         }
 
         async function askGemini(userInputText, base64Image = null, userDisplayText = null) {
@@ -361,6 +371,8 @@
                 updateBoard("エラー", "APIキー未入力", "上の欄に Gemini APIキー を入力してね！", userDisplayText);
                 return;
             }
+
+            setButtonsEnabled(false);
 
             try {
                 updateBoard("伴走・思考中...", "カズ先生が考えています...", null, userDisplayText);
@@ -426,7 +438,13 @@
                 }
             } catch (err) {
                 console.error("SDK Error:", err);
-                updateBoard("エラー発生", "通信エラー", `詳細: ${err.message}`, userDisplayText);
+                if (err.message && err.message.includes("429")) {
+                    updateBoard("制限オーバー", "少し待ってね", "立て続けに質問したため、無料枠の制限に達しました。30秒ほど待ってからもう一度押してね！", userDisplayText);
+                } else {
+                    updateBoard("エラー発生", "通信エラー", `詳細: ${err.message}`, userDisplayText);
+                }
+            } finally {
+                setButtonsEnabled(true);
             }
         }
 
@@ -478,7 +496,7 @@
             updateBoard("待機中", "カズ先生からのメッセージ", "カメラを閉じました。");
         });
 
-        document.getElementById('btn-q').addEventListener('click', () => {
+        btnQ.addEventListener('click', () => {
             previewContainer.style.display = 'none';
             boardTitle.style.display = 'block';
             
@@ -508,11 +526,11 @@
             }
         });
 
-        document.getElementById('btn-easier').addEventListener('click', () => {
+        btnEasier.addEventListener('click', () => {
             askGemini("今のヒントがちょっと難しかったよ。もっと身近な例え話や、別の噛み砕いた解説を教えて！", null, "もっとわかりやすく教えて！");
         });
 
-        document.getElementById('btn-next-step').addEventListener('click', () => {
+        btnNextStep.addEventListener('click', () => {
             askGemini("今の内容はわかったよ！次のステップに進むためのヒントを教えて。", null, "つぎへ進む");
         });
 
