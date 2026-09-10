@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん (v3.7)</title>
+    <title>AI学習コーチ - カズくん (v3.8)</title>
     <style>
         :root {
             --splat-yellow: #E6FF00;
@@ -105,7 +105,7 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v3.7</button>
+            <button class="btn-report" id="btn-log">v3.8</button>
         </div>
     </header>
 
@@ -145,7 +145,7 @@
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
-        console.log("Kazu-kun Coach v3.7 loaded successfully.");
+        console.log("Kazu-kun Coach v3.8 loaded successfully.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         
@@ -197,8 +197,8 @@
                 return;
             }
 
-            // 最も安定している gemini-2.5-flash モデルに変更
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            // 正しい最新の標準モデル gemini-2.0-flash を指定
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
             
             let contents = [{
                 parts: [
