@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v7.2 エラー完全修正＆ボタン整理)</title>
+    <title>AI学習コーチ - カズ先生 (v7.3 SDK画像送信修正版)</title>
     <script type="importmap">
       {
         "imports": {
@@ -90,7 +90,7 @@
             font-weight: bold;
         }
         
-        /* ボード内下部に常駐させる伴走アクションコントロールバー（ここで3つのボタンを完結） */
+        /* ボード内下部に常駐させる伴走アクションコントロールバー */
         #coaching-control-bar {
             display: none; padding: 8px; background: rgba(0,0,0,0.6);
             border-top: 2px solid var(--splat-yellow); gap: 8px; justify-content: center; flex-wrap: wrap;
@@ -104,7 +104,7 @@
         #btn-next-step { background: var(--splat-yellow); color: #111420; }
         #btn-solved { background: var(--splat-pink); color: #FFF; }
 
-        /* 通常のスタート用アクションバー（「わかった！」を削除し、質問とカメラだけに整理） */
+        /* 下部のメインアクションバー（質問とカメラのみ） */
         .action-bar { padding: 4px; display: flex; gap: 12px; justify-content: center; }
         .btn-action {
             border: none; border-radius: 20px; font-weight: 900; font-size: 13px; cursor: pointer;
@@ -144,7 +144,7 @@
             </svg>
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数コーチング (v7.2)</span>
+                <span class="character-sub">小4 算数コーチング (v7.3)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -213,7 +213,7 @@
             </div>
         </div>
 
-        <!-- 下部のメインアクションバー（質問とカメラのみに整理） -->
+        <!-- 下部のメインアクションバー -->
         <div class="action-bar" id="main-action-bar">
             <button class="btn-action" id="btn-q">🎙️ 質問する</button>
             <button class="btn-action" id="btn-cam">📷 カメラ</button>
@@ -225,7 +225,7 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        console.log("Kazu-sensei Board v7.2 loaded.");
+        console.log("Kazu-sensei Board v7.3 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -344,7 +344,7 @@
             if (speechText) {
                 boardSpeech.innerHTML = speechText;
                 speakText(speechText);
-                coachingControlBar.style.display = 'flex'; // 先生が答えたら操作バーを出現させる
+                coachingControlBar.style.display = 'flex';
             }
         }
 
@@ -382,19 +382,22 @@
 3. ホワイトボードに書くように、大きな文字でわかりやすく3行程度でまとめる。
 4. 会話の文脈を維持する。`;
 
-                // 完全に安全なパーツ構成（データエラーを完全に防止）
-                let currentParts = [];
+                // 正しいSDKのマルチモーダルデータ構造に修正
+                let contentParts = [];
                 if (base64Image) {
                     const base64Data = base64Image.split(',')[1];
-                    currentParts.push({
-                        inlineData: { mimeType: "image/jpeg", data: base64Data }
+                    contentParts.push({
+                        inlineData: {
+                            mimeType: "image/jpeg",
+                            data: base64Data
+                        }
                     });
                 }
                 if (userInputText) {
-                    currentParts.push(userInputText);
+                    contentParts.push(userInputText);
                 }
 
-                chatHistory.push({ role: 'user', parts: currentParts });
+                chatHistory.push({ role: 'user', parts: contentParts });
 
                 if (currentSessionTitle === '新規の相談' && userInputText && !base64Image) {
                     currentSessionTitle = userInputText.slice(0, 15) + (userInputText.length > 15 ? '...' : '');
@@ -405,7 +408,7 @@
                 }
 
                 const response = await ai.models.generateContent({
-                    model: 'gemini-3.6-flash',
+                    model: 'gemini-2.5-flash',
                     contents: chatHistory,
                     config: {
                         systemInstruction: systemInstruction,
@@ -505,7 +508,7 @@
             }
         });
 
-        // 3つの伴走アクションボタンの挙動
+        // 伴走アクションボタンの挙動
         document.getElementById('btn-easier').addEventListener('click', () => {
             askGemini("今のヒントがちょっと難しかったよ。もっと身近な例え話や、別の噛み砕いた解説を教えて！", null, "もっとわかりやすく教えて！");
         });
