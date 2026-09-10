@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん</title>
+    <title>AI学習コーチ - カズくん (v1.2)</title>
     <style>
         :root {
             --splat-yellow: #E6FF00;
@@ -53,15 +53,18 @@
         .board-header {
             padding: 8px 14px; background: rgba(0,0,0,0.4); font-size: 11px;
             color: #A0A5C0; font-weight: bold; border-bottom: 2px solid #2A1F45;
+            display: flex; justify-content: space-between; align-items: center;
         }
         #board-content {
             flex: 1; display: flex; flex-direction: column; align-items: center;
             justify-content: center; padding: 16px; text-align: center; gap: 12px; position: relative;
         }
-        .math-display { font-size: 28px; font-weight: 900; color: var(--splat-yellow); text-shadow: 2px 2px 0px #000; letter-spacing: 1px; }
+        .math-display { font-size: 24px; font-weight: 900; color: var(--splat-yellow); text-shadow: 2px 2px 0px #000; letter-spacing: 1px; }
         .math-subtext { font-size: 14px; color: #FFF; line-height: 1.5; background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 12px; border: 4px solid var(--splat-yellow); width: 90%; max-width: 500px; box-sizing: border-box; text-align: left; }
+        
         #preview-container { display: none; flex-direction: column; align-items: center; gap: 8px; width: 100%; height: 100%; justify-content: center; }
-        #preview-img { max-height: 160px; border-radius: 8px; border: 2px solid var(--splat-yellow); }
+        #preview-img { max-height: 150px; border-radius: 8px; border: 2px solid var(--splat-yellow); }
+
         .action-bar { padding: 0 10px 10px; display: flex; gap: 8px; justify-content: center; }
         .btn-action {
             border: none; border-radius: 24px; font-weight: 900; font-size: 14px; cursor: pointer;
@@ -101,13 +104,16 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">ろぐ・そうだん</button>
+            <button class="btn-report" id="btn-log">v1.2</button>
         </div>
     </header>
 
     <main>
         <div id="board-container">
-            <div class="board-header">COACH BOARD (解説・図解エリア)</div>
+            <div class="board-header">
+                <span>COACH BOARD (解説・図解エリア)</span>
+                <span id="status-badge" style="color: var(--splat-yellow);">待機中</span>
+            </div>
             <div id="board-content">
                 <div class="math-display">きょうのめいけん</div>
                 <div class="math-subtext" id="coach-speech">
@@ -115,7 +121,7 @@
                 </div>
                 <div id="preview-container">
                     <img id="preview-img" alt="プレビュー">
-                    <span style="font-size: 11px; color: #A0A5C0;">このノートをカズくんに見せるよ！</span>
+                    <span style="font-size: 11px; color: #A0A5C0;" id="preview-text">ノートを読み込みました！</span>
                 </div>
             </div>
             
@@ -139,6 +145,8 @@
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
+        console.log("Kazu-kun Coach v1.2 loaded.");
+
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
         if (savedKey) apiKeyInput.value = savedKey;
@@ -155,18 +163,28 @@
         const closeCamBtn = document.getElementById('close-cam-btn');
         const previewContainer = document.getElementById('preview-container');
         const previewImg = document.getElementById('preview-img');
+        const previewText = document.getElementById('preview-text');
         const mathDisplay = document.querySelector('.math-display');
+        const statusBadge = document.getElementById('status-badge');
 
         let mediaStream = null;
         let capturedBase64 = null;
 
-        // カメラ起動（環境指定を外し、イン/アウトどちらでもスムーズに開くように調整）
+        function setStatus(badgeText, speechText) {
+            statusBadge.innerText = badgeText;
+            if (speechText) {
+                speechElem.innerHTML = speechText;
+            }
+        }
+
+        // カメラ起動
         btnCam.addEventListener('click', async () => {
             try {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     alert('お使いのブラウザはカメラに対応していません。');
                     return;
                 }
+                setStatus("カメラ起動中...", "ノートをカメラにうつしてね！");
                 cameraModal.style.display = 'flex';
                 mediaStream = await navigator.mediaDevices.getUserMedia({ 
                     video: true, 
@@ -176,10 +194,11 @@
             } catch (err) {
                 alert('カメラをひらけませんでした: ' + err.message);
                 cameraModal.style.display = 'none';
+                setStatus("待機中", "カメラが開けなかったよ。");
             }
         });
 
-        // 写真撮影処理の修正（モーダルを確実に隠してプレビューを表示）
+        // 写真撮影
         snapBtn.addEventListener('click', () => {
             const canvas = document.getElementById('capture-canvas');
             canvas.width = cameraVideo.videoWidth || 640;
@@ -191,18 +210,26 @@
             previewImg.src = capturedBase64;
             
             stopCamera();
-            cameraModal.style.display = 'none'; // モーダルを閉じる
+            cameraModal.style.display = 'none';
 
-            // 画面切り替え
+            // 画面をプレビュー表示に切り替え
             mathDisplay.style.display = 'none';
-            speechElem.style.display = 'none';
+            speechElem.style.display = 'block';
             previewContainer.style.display = 'flex';
+            
+            // 考え中演出
+            setStatus("考え中...", "写真をとったよ！カズくんが問題をよみとっています...");
+            
+            setTimeout(() => {
+                setStatus("解説中", "なるほど！この問題はこうやってとくんだよ！（ここに解説が入るよ）");
+            }, 1800);
         });
 
-        // カメラを途中でやめる
+        // カメラをやめる
         closeCamBtn.addEventListener('click', () => {
             stopCamera();
             cameraModal.style.display = 'none';
+            setStatus("待機中", "カメラをとめたよ。");
         });
 
         function stopCamera() {
@@ -212,12 +239,20 @@
             }
         }
 
-        // 質問するボタン
+        // 質問する（マイク・音声入力のシミュレーション）
         document.getElementById('btn-q').addEventListener('click', () => {
-            speechElem.style.display = 'block';
-            mathDisplay.style.display = 'block';
             previewContainer.style.display = 'none';
-            speechElem.innerHTML = "「先生、ここがわからないよ！」って声に出して教えてね。（音声入力準備中）";
+            mathDisplay.style.display = 'block';
+            speechElem.style.display = 'block';
+            
+            setStatus("聞き取り中...", "「先生、ここがわからないよ！」ってマイクに向かって話してね……");
+            
+            setTimeout(() => {
+                setStatus("考え中...", "きみの声をききとったよ！ちょっとまってね...");
+                setTimeout(() => {
+                    setStatus("解説中", "そこがポイントだね！一緒に考えていこう！");
+                }, 1800);
+            }, 2000);
         });
 
         // わかった！ボタン
@@ -225,7 +260,7 @@
             previewContainer.style.display = 'none';
             mathDisplay.style.display = 'block';
             speechElem.style.display = 'block';
-            speechElem.innerHTML = "すごい！そのちょうしだね！ほかの問題もチャレンジしてみよう！";
+            setStatus("待機中", "すごい！そのちょうしだね！ほかの問題もチャレンジしてみよう！");
             capturedBase64 = null;
         });
     </script>
