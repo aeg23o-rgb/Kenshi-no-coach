@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん (v2.0)</title>
+    <title>AI学習コーチ - カズくん (v2.1)</title>
     <style>
         :root {
             --splat-yellow: #E6FF00;
@@ -105,7 +105,7 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v2.0</button>
+            <button class="btn-report" id="btn-log">v2.1</button>
         </div>
     </header>
 
@@ -145,7 +145,7 @@
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
-        console.log("Kazu-kun Coach v2.0 loaded.");
+        console.log("Kazu-kun Coach v2.1 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -186,7 +186,7 @@
             window.speechSynthesis.speak(utter);
         }
 
-        // v1 エンドポイントと gemini-1.5-flash の組み合わせ
+        // 動的に利用可能なモデルを解決してリクエストを送る堅牢な関数
         async function askGemini(promptText, base64Image = null) {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
@@ -194,22 +194,62 @@
                 return;
             }
 
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-            
-            let parts = [{ text: "あなたは小学4年生の算数専用のやさしいAIコーチ「カズくん」です。子供に寄り添い、答えを直接教えるのではなく、ヒントや考え方をわかりやすく短く（3行程度で）解説してください。\n\n" + promptText }];
-            
-            if (base64Image) {
-                const base64Data = base64Image.split(',')[1];
-                parts.push({
-                    inline_data: {
-                        mime_type: "image/jpeg",
-                        data: base64Data
-                    }
-                });
-            }
-
             try {
-                setStatus("考え中...", "カズくんが考えているよ...");
+                setStatus("接続中...", "使えるモデルを確認しています...");
+
+                // まず v1beta のモデルリストを取得してみる
+                let listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                let apiVer = 'v1beta';
+
+                //もし v1beta で駄目なら v1 を試す
+                if (!listRes.ok) {
+                    listRes = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`);
+                    apiVer = 'v1';
+                }
+
+                if (!listRes.ok) {
+                    const errText = await listRes.text();
+                    setStatus("認証エラー " + listRes.status, `APIキーを確認してください: ${errText.substring(0, 80)}`);
+                    return;
+                }
+
+                const listData = await listRes.json();
+                const models = listData.models || [];
+
+                // generateContent が使えるモデルを抽出
+                const available = models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"));
+                
+                if (available.length === 0) {
+                    setStatus("エラー", "このAPIキーで利用可能な生成モデルが見つかりません。");
+                    return;
+                }
+
+                // flash または pro を含むモデルを優先選択、なければ先頭のモデルを使用
+                let selectedModelObj = available.find(m => m.name.includes("flash")) || 
+                                       available.find(m => m.name.includes("pro")) || 
+                                       available[0];
+
+                // モデル名から "models/" プレフィックスを安全に整える
+                let modelId = selectedModelObj.name;
+                if (modelId.startsWith("models/")) {
+                    modelId = modelId.replace("models/", "");
+                }
+
+                const url = `https://generativelanguage.googleapis.com/${apiVer}/models/${modelId}:generateContent?key=${apiKey}`;
+                
+                let parts = [{ text: "あなたは小学4年生の算数専用のやさしいAIコーチ「カズくん」です。子供に寄り添い、答えを直接教えるのではなく、ヒントや考え方をわかりやすく短く（3行程度で）解説してください。\n\n" + promptText }];
+                
+                if (base64Image) {
+                    const base64Data = base64Image.split(',')[1];
+                    parts.push({
+                        inline_data: {
+                            mime_type: "image/jpeg",
+                            data: base64Data
+                        }
+                    });
+                }
+
+                setStatus("考え中...", `(${modelId}で思考中...)`);
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -218,7 +258,7 @@
 
                 if (!response.ok) {
                     const errData = await response.text();
-                    setStatus("HTTPエラー " + response.status, `詳細: ${errData.substring(0, 150)}`);
+                    setStatus("HTTPエラー " + response.status, `詳細: ${errData.substring(0, 120)}`);
                     return;
                 }
 
@@ -227,10 +267,10 @@
                     const aiText = data.candidates[0].content.parts[0].text;
                     setStatus("解説中", aiText.replace(/\n/g, '<br>'));
                 } else {
-                    setStatus("データエラー", "レスポンスの形式が違います。");
+                    setStatus("データエラー", "AIからの返答形式が正しくありません。");
                 }
             } catch (err) {
-                setStatus("通信例外エラー", err.message);
+                setStatus("通信エラー", err.message);
             }
         }
 
