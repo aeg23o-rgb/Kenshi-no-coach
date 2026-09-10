@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v7.1 ボタン配置修正版)</title>
+    <title>AI学習コーチ - カズ先生 (v7.2 エラー完全修正＆ボタン整理)</title>
     <script type="importmap">
       {
         "imports": {
@@ -90,31 +90,30 @@
             font-weight: bold;
         }
         
-        /* ボード内下部に常駐させる伴走アクションコントロールバー */
+        /* ボード内下部に常駐させる伴走アクションコントロールバー（ここで3つのボタンを完結） */
         #coaching-control-bar {
-            display: none; padding: 8px; background: rgba(0,0,0,0.5);
-            border-top: 2px solid var(--splat-yellow); gap: 6px; justify-content: center; flex-wrap: wrap;
+            display: none; padding: 8px; background: rgba(0,0,0,0.6);
+            border-top: 2px solid var(--splat-yellow); gap: 8px; justify-content: center; flex-wrap: wrap;
             z-index: 10;
         }
         .btn-coach {
-            border: none; border-radius: 10px; font-weight: 900; font-size: 11px; cursor: pointer;
-            padding: 8px 12px; color: #111420; box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+            border: none; border-radius: 12px; font-weight: 900; font-size: 12px; cursor: pointer;
+            padding: 10px 14px; box-shadow: 0 2px 0 rgba(0,0,0,0.3);
         }
-        #btn-easier { background: var(--splat-cyan); }
-        #btn-next-step { background: var(--splat-yellow); }
+        #btn-easier { background: var(--splat-cyan); color: #111420; }
+        #btn-next-step { background: var(--splat-yellow); color: #111420; }
         #btn-solved { background: var(--splat-pink); color: #FFF; }
 
-        /* 通常のスタート用アクションバー */
-        .action-bar { padding: 0 4px 4px; display: flex; gap: 8px; justify-content: center; }
+        /* 通常のスタート用アクションバー（「わかった！」を削除し、質問とカメラだけに整理） */
+        .action-bar { padding: 4px; display: flex; gap: 12px; justify-content: center; }
         .btn-action {
             border: none; border-radius: 20px; font-weight: 900; font-size: 13px; cursor: pointer;
-            padding: 10px 16px; color: #111420; display: flex; align-items: center; gap: 4px;
+            padding: 12px 20px; color: #111420; display: flex; align-items: center; gap: 4px;
             box-shadow: 0 4px 0 rgba(0,0,0,0.3); transition: transform 0.1s;
         }
         .btn-action:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
         #btn-q { background: var(--splat-yellow); }
         #btn-cam { background: var(--splat-cyan); }
-        #btn-ok { background: var(--splat-pink); color: #FFF; }
         
         /* モーダル共通 */
         .modal-overlay {
@@ -145,7 +144,7 @@
             </svg>
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数コーチング (v7.1)</span>
+                <span class="character-sub">小4 算数コーチング (v7.2)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -208,16 +207,16 @@
                 <div class="modal-box">
                     <div style="font-weight:900; color:var(--splat-yellow); font-size:16px;">よくがんばったね！🎉</div>
                     <div style="font-size:13px; color:#FFF; line-height:1.5;">この相談をどうする？</div>
-                    <button class="btn-action" id="btn-end-session" style="background: var(--splat-pink); color:#FFF; width:100%; justify-content:center;">🏁 相談を終了して履歴に保存する</button>
-                    <button class="btn-action" id="btn-continue-session" style="background: var(--splat-yellow); width:100%; justify-content:center;">✏️ 引き続きこの相談を続ける</button>
+                    <button class="btn-coach" id="btn-end-session" style="background: var(--splat-pink); color:#FFF; width:100%;">🏁 相談を終了して履歴に保存する</button>
+                    <button class="btn-coach" id="btn-continue-session" style="background: var(--splat-yellow); color:#111420; width:100%;">✏️ 引き続きこの相談を続ける</button>
                 </div>
             </div>
         </div>
 
+        <!-- 下部のメインアクションバー（質問とカメラのみに整理） -->
         <div class="action-bar" id="main-action-bar">
             <button class="btn-action" id="btn-q">🎙️ 質問する</button>
             <button class="btn-action" id="btn-cam">📷 カメラ</button>
-            <button class="btn-action" id="btn-ok">👍 わかった！</button>
         </div>
     </main>
 
@@ -226,7 +225,7 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        console.log("Kazu-sensei Board v7.1 loaded.");
+        console.log("Kazu-sensei Board v7.2 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -383,6 +382,7 @@
 3. ホワイトボードに書くように、大きな文字でわかりやすく3行程度でまとめる。
 4. 会話の文脈を維持する。`;
 
+                // 完全に安全なパーツ構成（データエラーを完全に防止）
                 let currentParts = [];
                 if (base64Image) {
                     const base64Data = base64Image.split(',')[1];
@@ -390,7 +390,9 @@
                         inlineData: { mimeType: "image/jpeg", data: base64Data }
                     });
                 }
-                currentParts.push(userInputText);
+                if (userInputText) {
+                    currentParts.push(userInputText);
+                }
 
                 chatHistory.push({ role: 'user', parts: currentParts });
 
@@ -510,10 +512,6 @@
 
         document.getElementById('btn-next-step').addEventListener('click', () => {
             askGemini("今の内容はわかったよ！次のステップに進むためのヒントを教えて。", null, "つぎへ進む");
-        });
-
-        document.getElementById('btn-ok').addEventListener('click', () => {
-            solvedModal.style.display = 'flex';
         });
 
         document.getElementById('btn-solved').addEventListener('click', () => {
