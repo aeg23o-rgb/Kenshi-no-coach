@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん (v4.2)</title>
+    <title>AI学習コーチ - カズくん (v5.0 コーチング強化版)</title>
     <script type="importmap">
       {
         "imports": {
@@ -112,7 +112,7 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v4.2</button>
+            <button class="btn-report" id="btn-log">v5.0</button>
         </div>
     </header>
 
@@ -153,7 +153,7 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        console.log("Kazu-kun Coach v4.2 SDK loaded successfully.");
+        console.log("Kazu-kun Coach v5.0 SDK loaded successfully.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -202,11 +202,16 @@
             }
 
             try {
-                setStatus("考え中...", "カズくんが考えているよ...");
+                setStatus("考え中...", "カズくんがヒントを考えているよ...");
                 
                 const ai = new GoogleGenAI({ apiKey: apiKey });
 
-                const systemInstruction = "あなたは小学4年生の算数専用のやさしいAIコーチ「カズくん」です。子供に寄り添い、答えを直接教えるのではなく、ヒントや考え方をわかりやすく短く（3行程度で）解説してください。";
+                // 【v5.0 コーチング厳格化プロンプト】
+                const systemInstruction = `あなたは小学4年生の算数専用のやさしいAIコーチ「カズくん」です。
+以下のルールを絶対に守ってください：
+1. **答えを絶対に直接教えないこと**（計算結果や答えの数値をそのまま出力するのは禁止です）。
+2. 子供が自分で考えられるように、**「まずはどこに注目すればいいか」のヒントを1つだけ**短く（3行程度で）問いかけてください。
+3. すぐに答えを出すのではなく、子供が自分で気づくためのステップ（スキャフォールディング）を意識してください。`;
 
                 let contents = [];
                 if (base64Image) {
@@ -220,7 +225,6 @@
                 }
                 contents.push(promptText);
 
-                // エラーメッセージの指示に従い、最新の gemini-3.6-flash を指定
                 const response = await ai.models.generateContent({
                     model: 'gemini-3.6-flash',
                     contents: contents,
@@ -230,7 +234,7 @@
                 });
 
                 if (response && response.text) {
-                    setStatus("解説中", response.text.replace(/\n/g, '<br>'));
+                    setStatus("ヒント提示中", response.text.replace(/\n/g, '<br>'));
                 } else {
                     setStatus("データエラー", "レスポンスが空でした。");
                 }
@@ -273,7 +277,7 @@
             mainTitle.style.display = 'none';
             previewContainer.style.display = 'flex';
             
-            askGemini("このノートに書かれている算数の問題を見て、小4の子に向けて解き方のヒントや考え方を優しく教えてください。", capturedBase64);
+            askGemini("このノートの問題を見て、答えを言わずに、まずは最初の考え方のヒントを優しく教えてください。", capturedBase64);
         });
 
         closeCamBtn.addEventListener('click', () => {
@@ -305,7 +309,7 @@
 
                 recognition.onresult = (event) => {
                     const speechResult = event.results[0][0].transcript;
-                    askGemini(`生徒からの質問: ${speechResult}`);
+                    askGemini(`生徒からの質問: ${speechResult} （※答えは教えず、考え方のヒントを返してください）`);
                 };
 
                 recognition.onerror = () => {
@@ -315,7 +319,7 @@
                 recognition.start();
             } else {
                 setStatus("考え中...", "音声認識が使えない環境みたい。テキストで質問してね！");
-                askGemini("小4の算数について質問があります。わかりやすく教えてください。");
+                askGemini("小4の算数について質問があります。答えを言わずにヒントを教えてください。");
             }
         });
 
