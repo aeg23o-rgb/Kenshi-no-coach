@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v7.3 SDK画像送信修正版)</title>
+    <title>AI学習コーチ - カズ先生 (v7.4 安定版)</title>
     <script type="importmap">
       {
         "imports": {
@@ -90,7 +90,6 @@
             font-weight: bold;
         }
         
-        /* ボード内下部に常駐させる伴走アクションコントロールバー */
         #coaching-control-bar {
             display: none; padding: 8px; background: rgba(0,0,0,0.6);
             border-top: 2px solid var(--splat-yellow); gap: 8px; justify-content: center; flex-wrap: wrap;
@@ -104,7 +103,6 @@
         #btn-next-step { background: var(--splat-yellow); color: #111420; }
         #btn-solved { background: var(--splat-pink); color: #FFF; }
 
-        /* 下部のメインアクションバー（質問とカメラのみ） */
         .action-bar { padding: 4px; display: flex; gap: 12px; justify-content: center; }
         .btn-action {
             border: none; border-radius: 20px; font-weight: 900; font-size: 13px; cursor: pointer;
@@ -115,7 +113,6 @@
         #btn-q { background: var(--splat-yellow); }
         #btn-cam { background: var(--splat-cyan); }
         
-        /* モーダル共通 */
         .modal-overlay {
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
@@ -144,7 +141,7 @@
             </svg>
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数コーチング (v7.3)</span>
+                <span class="character-sub">小4 算数コーチング (v7.4)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -177,14 +174,12 @@
                 </div>
             </div>
             
-            <!-- 先生が答えた後にホワイトボード下部に現れる伴走アクションボタン群 -->
             <div id="coaching-control-bar">
                 <button class="btn-coach" id="btn-easier">💡 もっとわかりやすく</button>
                 <button class="btn-coach" id="btn-next-step">➡️ つぎへ進む</button>
                 <button class="btn-coach" id="btn-solved">👍 わかった！</button>
             </div>
 
-            <!-- カメラモーダル -->
             <div id="camera-modal" class="modal-overlay">
                 <video id="camera-video" autoplay playsinline muted></video>
                 <div style="display: flex; gap: 10px;">
@@ -193,7 +188,6 @@
                 </div>
             </div>
 
-            <!-- 履歴一覧モーダル -->
             <div id="history-modal" class="modal-overlay">
                 <div class="modal-box" style="text-align: left;">
                     <div style="font-weight:900; color:var(--splat-yellow); font-size:16px; margin-bottom:4px;">これまでの相談ルーム</div>
@@ -202,7 +196,6 @@
                 </div>
             </div>
 
-            <!-- 「わかった！」の選択肢モーダル -->
             <div id="solved-modal" class="modal-overlay">
                 <div class="modal-box">
                     <div style="font-weight:900; color:var(--splat-yellow); font-size:16px;">よくがんばったね！🎉</div>
@@ -213,7 +206,6 @@
             </div>
         </div>
 
-        <!-- 下部のメインアクションバー -->
         <div class="action-bar" id="main-action-bar">
             <button class="btn-action" id="btn-q">🎙️ 質問する</button>
             <button class="btn-action" id="btn-cam">📷 カメラ</button>
@@ -225,7 +217,7 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        console.log("Kazu-sensei Board v7.3 loaded.");
+        console.log("Kazu-sensei Board v7.4 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -382,22 +374,21 @@
 3. ホワイトボードに書くように、大きな文字でわかりやすく3行程度でまとめる。
 4. 会話の文脈を維持する。`;
 
-                // 正しいSDKのマルチモーダルデータ構造に修正
-                let contentParts = [];
+                // テキストと画像データを安全にパーツ配列へ格納
+                let parts = [];
                 if (base64Image) {
-                    const base64Data = base64Image.split(',')[1];
-                    contentParts.push({
+                    parts.push({
                         inlineData: {
                             mimeType: "image/jpeg",
-                            data: base64Data
+                            data: base64Image.split(',')[1]
                         }
                     });
                 }
                 if (userInputText) {
-                    contentParts.push(userInputText);
+                    parts.push(userInputText);
                 }
 
-                chatHistory.push({ role: 'user', parts: contentParts });
+                chatHistory.push({ role: 'user', parts: parts });
 
                 if (currentSessionTitle === '新規の相談' && userInputText && !base64Image) {
                     currentSessionTitle = userInputText.slice(0, 15) + (userInputText.length > 15 ? '...' : '');
@@ -407,9 +398,20 @@
                     sessionTitleBadge.innerText = `テーマ: ${currentSessionTitle}`;
                 }
 
+                // 過去のやり取りも含めて、テキスト主体の安全なcontents構造に変換して送信
+                const cleanContents = chatHistory.map(turn => ({
+                    role: turn.role,
+                    parts: turn.parts.map(p => {
+                        if (typeof p === 'string') return { text: p };
+                        if (p.text) return { text: p.text };
+                        if (p.inlineData) return { inlineData: p.inlineData };
+                        return { text: String(p) };
+                    })
+                }));
+
                 const response = await ai.models.generateContent({
                     model: 'gemini-2.5-flash',
-                    contents: chatHistory,
+                    contents: cleanContents,
                     config: {
                         systemInstruction: systemInstruction,
                     }
@@ -508,7 +510,6 @@
             }
         });
 
-        // 伴走アクションボタンの挙動
         document.getElementById('btn-easier').addEventListener('click', () => {
             askGemini("今のヒントがちょっと難しかったよ。もっと身近な例え話や、別の噛み砕いた解説を教えて！", null, "もっとわかりやすく教えて！");
         });
