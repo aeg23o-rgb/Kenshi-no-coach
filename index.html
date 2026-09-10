@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v9.1 Fix)</title>
+    <title>AI学習コーチ - カズ先生 (v9.2)</title>
     <script type="importmap">
       {
         "imports": {
@@ -82,33 +82,46 @@
             overflow-y: auto;
         }
         
+        /* 先生の顔を大きくする変更 */
         .manga-stage {
-            display: flex; gap: 12px; align-items: center; width: 96%;
-            background: rgba(0,0,0,0.35); border: 3px solid var(--splat-purple); border-radius: 16px; padding: 8px 12px;
+            display: flex; gap: 16px; align-items: center; width: 96%;
+            background: rgba(0,0,0,0.4); border: 3px solid var(--splat-purple); border-radius: 16px; padding: 10px 16px;
             box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
         }
-        #teacher-avatar-svg { width: 64px; height: 64px; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        #teacher-avatar-svg { width: 96px; height: 96px; flex-shrink: 0; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); }
         
         #visual-container {
             display: none; width: 96%; background: #0D101A;
             border: 2px solid var(--splat-cyan); border-radius: 12px; padding: 8px; flex-direction: column; align-items: center; justify-content: center;
             box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
         }
-        #visual-svg { width: 100%; height: 130px; }
+        #visual-svg { width: 100%; height: 120px; }
 
         #preview-container { display: none; flex-direction: column; align-items: center; gap: 4px; width: 100%; }
-        #preview-img { max-height: 60px; border-radius: 8px; border: 2px solid var(--splat-yellow); }
+        #preview-img { max-height: 50px; border-radius: 8px; border: 2px solid var(--splat-yellow); }
 
         .board-text-title { font-size: 13px; font-weight: 900; color: var(--splat-cyan); text-shadow: 1px 1px 0px #000; align-self: flex-start; margin-left: 2%; display: flex; align-items: center; gap: 4px;}
         
+        /* ホワイトボードの文字サイズ・視認性をアップ */
         .board-text-body { 
-            font-size: 15px; color: #FFF; line-height: 1.5; 
+            font-size: 17px; color: #FFF; line-height: 1.6; 
             text-align: left; width: 96%; 
-            padding: 12px 16px; box-sizing: border-box; 
+            padding: 14px 18px; box-sizing: border-box; 
             background: #111522; border-radius: 14px; border: 2px solid var(--splat-border);
-            font-weight: bold; min-height: 70px;
+            font-weight: bold; min-height: 90px;
             box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
+        }
+
+        /* 強調文字（数字やキーワード）のスタイル */
+        .board-text-body .highlight-word {
+            color: var(--splat-yellow);
+            font-size: 19px;
+            font-weight: 900;
+            text-shadow: 1px 1px 0px #000;
+            background: rgba(204,255,0,0.1);
+            padding: 0 4px;
+            border-radius: 4px;
         }
         
         #coaching-control-bar {
@@ -155,7 +168,7 @@
 
         @keyframes talkMouth {
             0% { d: path("M 30 60 Q 50 80 70 60"); }
-            50% { d: path("M 30 65 Q 50 50 70 65"); }
+            50% { d: path("M 30 65 Q 50 48 70 65"); }
             100% { d: path("M 30 60 Q 50 80 70 60"); }
         }
         .speaking #mouth-path {
@@ -180,7 +193,7 @@
             </svg>
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数コーチング (v9.1 Fix)</span>
+                <span class="character-sub">小4 算数コーチング (v9.2)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -202,6 +215,7 @@
             </div>
             
             <div id="board-content">
+                <!-- 大きくなった先生のステージ -->
                 <div class="manga-stage" id="manga-stage">
                     <svg id="teacher-avatar-svg" viewBox="0 0 100 100">
                         <circle cx="50" cy="50" r="45" fill="var(--splat-purple)" stroke="var(--splat-yellow)" stroke-width="6"/>
@@ -211,8 +225,8 @@
                         <line x1="55" y1="32" x2="75" y2="28" stroke="var(--splat-yellow)" stroke-width="4" stroke-linecap="round" id="brow-r"/>
                         <path id="mouth-path" d="M 30 60 Q 50 80 70 60" stroke="var(--splat-yellow)" stroke-width="6" fill="none" stroke-linecap="round"/>
                     </svg>
-                    <div style="font-size: 12px; color: var(--splat-yellow); text-align: left; font-weight: 900; text-shadow: 1px 1px 0 #000;">
-                        熱血！カズ先生<br><span id="teacher-mood" style="color:#FFF; font-size:11px; font-weight:bold;">「一緒にがんばろう！」</span>
+                    <div style="font-size: 14px; color: var(--splat-yellow); text-align: left; font-weight: 900; text-shadow: 1px 1px 0 #000;">
+                        熱血！カズ先生<br><span id="teacher-mood" style="color:#FFF; font-size:12px; font-weight:bold;">“一緒にがんばろう！”</span>
                     </div>
                 </div>
 
@@ -226,8 +240,8 @@
                 
                 <div class="board-text-title" id="board-title"><span>📝</span> カズ先生からのホワイトボード解説</div>
                 <div class="board-text-body" id="board-speech">
-                    こんにちは！解きたい問題を「カメラ」で写すか、<br>
-                    「質問する」ボタンから話しかけてね！最後まで一緒に伴走するよ。
+                    こんにちは！解きたい問題をカメラで写すか、<br>
+                    質問ボタンから話しかけてね！最後まで一緒に伴走するよ。
                 </div>
             </div>
             
@@ -328,7 +342,7 @@
         }
 
         function setTeacherMood(mood, moodText) {
-            teacherMood.innerText = `「${moodText}」`;
+            teacherMood.innerText = `“${moodText}”`;
             const mouth = document.getElementById('mouth-path');
             const browL = document.getElementById('brow-l');
             const browR = document.getElementById('brow-r');
@@ -388,43 +402,50 @@
             }
         }
 
+        // テキスト中の数値を自動でハイライト（大きく・太く・色付き）する関数
+        function formatBoardText(rawHtml) {
+            let text = rawHtml;
+            text = text.replace(/([0-9０-９]+(?:\.[0-9０-９]+)?)/g, '<span class="highlight-word">$1</span>');
+            return text;
+        }
+
         function typeWriterEffect(htmlText, callback) {
             if (typingTimer) clearInterval(typingTimer);
             boardSpeech.innerHTML = '';
             boardSpeech.classList.add('typing-cursor');
 
-            const plainText = htmlText.replace(/<br>/g, '\n');
-            let charIndex = 0;
+            const formattedHtml = formatBoardText(htmlText);
+            const plainText = formattedHtml.replace(/<br>/g, '\n').replace(/<\/?[^>]+(>|$)/g, ""); 
             
+            let charIndex = 0;
             typingTimer = setInterval(() => {
                 if (charIndex < plainText.length) {
-                    const currentStr = plainText.substring(0, charIndex + 1).replace(/\n/g, '<br>');
-                    boardSpeech.innerHTML = currentStr;
+                    boardSpeech.innerHTML = plainText.substring(0, charIndex + 1).replace(/\n/g, '<br>');
                     charIndex++;
                 } else {
                     clearInterval(typingTimer);
                     boardSpeech.classList.remove('typing-cursor');
-                    boardSpeech.innerHTML = htmlText; 
+                    boardSpeech.innerHTML = formattedHtml; 
                     if (callback) callback();
                 }
-            }, 20);
+            }, 25);
         }
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v91') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v92') || '{}');
             sessions[currentSessionId] = {
                 title: currentSessionTitle,
                 updatedAt: new Date().toLocaleString(),
                 history: chatHistory,
                 lastSpeech: boardSpeech.innerHTML
             };
-            localStorage.setItem('kazu_sessions_v91', JSON.stringify(sessions));
+            localStorage.setItem('kazu_sessions_v92', JSON.stringify(sessions));
         }
 
         function loadSessionList() {
             historyListContainer.innerHTML = '';
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v91') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v92') || '{}');
             const keys = Object.keys(sessions);
             
             if (keys.length === 0) {
@@ -499,14 +520,15 @@
             }
         }
 
+        // 音声を「落ち着いた低めの声」「ゆっくり」に調整
         function speakText(text) {
             if (!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
             const cleanText = text.replace(/<[^>]*>?/gm, '');
             const utter = new SpeechSynthesisUtterance(cleanText);
             utter.lang = 'ja-JP';
-            utter.rate = 1.1; 
-            utter.pitch = 1.05;
+            utter.rate = 0.9;  // 少しゆっくり
+            utter.pitch = 0.8; // 落ち着いた低めの声
 
             utter.onstart = () => { mangaStage.classList.add('speaking'); };
             utter.onend = () => { mangaStage.classList.remove('speaking'); };
@@ -523,16 +545,16 @@
             }
 
             setButtonsEnabled(false);
-            setTeacherMood('thinking', 'うーん、どうアプローチしようかな…');
+            setTeacherMood('thinking', 'うーん、どうアプローチしようか…');
 
             try {
                 const ai = new GoogleGenAI({ apiKey: apiKey });
 
-                const systemInstruction = `あなたは小学4年生の算数専用の、熱血でテンションが高くやさしいアニメ風の指導者「カズ先生」です。
+                const systemInstruction = `あなたは小学4年生の算数専用の、熱血で落ち着いたトーンのやさしいアニメ風指導者「カズ先生」です。
 コーチングの絶対ルール：
 1. **答えや計算結果を直接教えないこと**。
 2. 子供が自分の足でヒントから答えにたどり着くように伴走する。
-3. ホワイトボードに書き込むように、熱血かつ分かりやすく3〜4行程度でまとめる。
+3. ホワイトボードに書き込むように、分かりやすく3〜4行程度でまとめる。
 4. 返答の最後に必ず図解の種類として【図解:bars】（線分図や割合）、【図解:blocks】（ブロック面積図）、【図解:decimals】（小数や位取り）、または【図解:none】のいずれかを含めて指定すること。`;
 
                 let parts = [];
@@ -568,8 +590,9 @@
                     })
                 }));
 
+                // モデルを最新の gemini-3.6-flash に変更
                 const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
+                    model: 'gemini-3.6-flash',
                     contents: cleanContents,
                     config: {
                         systemInstruction: systemInstruction,
@@ -587,7 +610,7 @@
                     const replyText = rawText.trim().replace(/\n/g, '<br>');
                     chatHistory.push({ role: 'model', parts: [{ text: response.text }] });
                     
-                    updateBoard("伴走コーチング中", "カズ先生のホワイトボード解説", replyText, userDisplayText, 'happy', 'ひらめいたよ！一緒に解こう！', diagType);
+                    updateBoard("伴走コーチング中", "カズ先生のホワイトボード解説", replyText, userDisplayText, 'happy', 'なるほど、一緒に解こう！', diagType);
                     saveCurrentSession();
                 } else {
                     updateBoard("エラー", "データなし", "ホワイトボードに文字を書けませんでした。", userDisplayText, 'normal', '困ったな…');
@@ -640,7 +663,7 @@
             boardTitle.style.display = 'flex';
             previewContainer.style.display = 'flex';
             
-            askGemini("このノートの問題を見て、答えを言わずに、最初のヒントをホワイトボードに分かりやすく熱血に教えてください。", capturedBase64, "カメラで問題を撮影して相談しました");
+            askGemini("このノートの問題を見て、答えを言わずに、最初のヒントをホワイトボードに分かりやすく教えてください。", capturedBase64, "カメラで問題を撮影して相談しました");
         });
 
         closeCamBtn.addEventListener('click', () => {
@@ -701,8 +724,8 @@
             visualContainer.style.display = 'none';
             boardTitle.style.display = 'flex';
             
-            const cheers = "すごい！今回の相談はこれにて大クリア！しっかり相談履歴に保存したよ。次の問題もこの調子でがんばろう！";
-            updateBoard("完了・保存済", "カズ先生からのメッセージ", cheers, "わかった！相談を終了して保存するよ", 'happy', 'お疲れ様！大正解！');
+            const cheers = "すごいね！今回の相談はこれにてクリア！しっかり相談履歴に保存したよ。次の問題もこの調子でがんばろう！";
+            updateBoard("完了・保存済", "カズ先生からのメッセージ", cheers, "わかった！相談を終了して保存するよ", 'happy', 'お疲れ様！素晴らしい！');
             
             chatHistory.push({ role: 'user', parts: [{ text: "わかった！" }] });
             chatHistory.push({ role: 'model', parts: [{ text: cheers }] });
