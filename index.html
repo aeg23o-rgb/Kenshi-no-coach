@@ -1,381 +1,235 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AI学習コーチ - カズくん</title>
-  <style>
-    :root { 
-      --splat-yellow: #E6FF00; 
-      --splat-purple: #6E00FF; 
-      --splat-pink: #FF007F;
-      --splat-bg: #111420;
-      --splat-card: #1E2235;
-    }
-    body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Arial Black', sans-serif; background: var(--splat-bg); overflow: hidden; display: flex; flex-direction: column; color: #FFF; user-select: none; }
-    
-    #config-bar { background: var(--splat-purple); color: #fff; padding: 4px 10px; display: flex; gap: 8px; align-items: center; font-size: 10px; border-bottom: 2px solid var(--splat-yellow); }
-    #config-bar input { flex: 1; padding: 3px 6px; border-radius: 6px; border: none; font-size: 10px; background: #2A1F45; color: #FFF; }
-    
-    header { height: 52px; background: var(--splat-card); border-bottom: 3px solid var(--splat-yellow); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; }
-    
-    #avatar-box { display: flex; align-items: center; gap: 10px; }
-    #avatar-svg { width: 44px; height: 44px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5)); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .character-title { display: flex; flex-direction: column; }
-    .character-name { font-weight: 900; font-size: 15px; color: var(--splat-yellow); text-shadow: 1px 1px 0px #000; }
-    .character-sub { font-size: 10px; color: #A0A5C0; }
-
-    .header-btns { display: flex; gap: 6px; align-items: center; }
-    .btn-report { background: var(--splat-purple); color: #FFF; border: 1.5px solid var(--splat-yellow); padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; }
-
-    main { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 10px; overflow: hidden; position: relative; }
-    
-    #board-container { flex: 1; background: var(--splat-card); border-radius: 16px; display: flex; flex-direction: column; position: relative; border: 3px solid var(--splat-purple); box-shadow: 0 4px 16px rgba(110,0,255,0.25); overflow: hidden; }
-    .board-header { padding: 8px 14px; background: rgba(0,0,0,0.4); font-size: 11px; color: #A0A5C0; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2A1F45; }
-    
-    #board-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; text-align: center; gap: 12px; position: relative; }
-    .math-display { font-size: 28px; font-weight: 900; color: var(--splat-yellow); text-shadow: 2px 2px 0px #000; letter-spacing: 1px; }
-    .math-subtext { font-size: 14px; color: #FFF; line-height: 1.5; background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 12px; border-left: 4px solid var(--splat-yellow); width: 90%; max-width: 500px; box-sizing: border-box; text-align: left; }
-
-    #preview-img { max-height: 90px; border-radius: 8px; border: 2px solid var(--splat-yellow); display: none; margin-bottom: 4px; }
-
-    #speech-banner { background: rgba(17, 20, 32, 0.95); border: 2px solid var(--splat-yellow); color: #FFF; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.4; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-    
-    .action-bar { padding: 0 10px 10px; display: flex; gap: 8px; justify-content: center; }
-    .btn-action { border: none; padding: 12px 14px; border-radius: 24px; font-weight: 900; font-size: 14px; cursor: pointer; transition: transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 4px; }
-    .btn-mic { background: var(--splat-yellow); color: #000; box-shadow: 0 4px 0 #AACC00; flex: 2; }
-    .btn-cam { background: #00E5FF; color: #000; box-shadow: 0 4px 0 #00B3CC; flex: 1.2; }
-    .btn-understood { background: var(--splat-pink); color: #FFF; box-shadow: 0 4px 0 #CC0066; flex: 1.2; }
-    .btn-action:active { transform: translateY(2px); box-shadow: none; }
-
-    /* レポート・ログモーダル */
-    #report-modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17,20,32,0.95); z-index: 100; padding: 16px; box-sizing: border-box; flex-direction: column; gap: 12px; overflow-y: auto; }
-    #report-modal h2 { color: var(--splat-yellow); margin: 0; font-size: 18px; border-bottom: 2px solid var(--splat-yellow); padding-bottom: 8px; }
-    .report-item { background: var(--splat-card); border-left: 4px solid #00E5FF; padding: 10px; border-radius: 8px; font-size: 12px; line-height: 1.4; margin-bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
-    .report-time { color: #A0A5C0; font-size: 10px; }
-    .btn-resume { background: var(--splat-yellow); color: #000; border: none; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; cursor: pointer; align-self: flex-start; }
-    .btn-close-modal { background: var(--splat-pink); color: #FFF; border: none; padding: 8px; border-radius: 8px; font-weight: bold; cursor: pointer; align-self: flex-end; }
-
-    #error-log { color: #FF5252; font-size: 11px; padding: 6px 12px; background: rgba(255,82,82,0.15); border: 1px solid #FF5252; display: none; text-align: center; word-break: break-all; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI学習コーチ - カズくん</title>
+    <style>
+        :root {
+            --splat-yellow: #E6FF00;
+            --splat-purple: #6E00FF;
+            --splat-pink: #FF007F;
+            --splat-bg: #111420;
+            --splat-card: #1E2235;
+        }
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Arial Black', sans-serif; background: var(--splat-bg);
+            overflow: hidden; display: flex; flex-direction: column; color: #FF0000;
+            user-select: none;
+        }
+        #config-bar {
+            background: var(--splat-purple); color: #fff; padding: 6px 12px;
+            display: flex; gap: 8px; align-items: center; font-size: 12px;
+            border-bottom: 2px solid var(--splat-yellow);
+        }
+        #config-bar input {
+            flex: 1; padding: 4px 8px; border-radius: 6px; border: none;
+            font-size: 12px; background: #2A1F45; color: #FF0000;
+        }
+        header {
+            height: 52px; background: var(--splat-card);
+            border-bottom: 3px solid var(--splat-yellow);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 12px;
+        }
+        #avatar-box { display: flex; align-items: center; gap: 10px; }
+        .character-title { display: flex; flex-direction: column; }
+        .character-name { font-weight: 900; font-size: 15px; color: var(--splat-yellow); text-shadow: 1px 1px 0px #000; }
+        .character-sub { font-size: 10px; color: #A0A5C0; }
+        .header-btns { display: flex; gap: 6px; align-items: center; }
+        .btn-report {
+            background: var(--splat-purple); color: #FF0000; border: 1.5px solid var(--splat-yellow);
+            padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;
+        }
+        main {
+            flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 10px;
+            overflow: hidden; position: relative;
+        }
+        #board-container {
+            flex: 1; background: var(--splat-card); border-radius: 16px;
+            border: 3px solid var(--splat-yellow); box-shadow: 0 4px 16px rgba(110,0,255,0.25);
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
+        }
+        .board-header {
+            padding: 8px 14px; background: rgba(0,0,0,0.4); font-size: 11px;
+            color: #A0A5C0; font-weight: bold; border-bottom: 2px solid #2A1F45;
+        }
+        #board-content {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 16px; text-align: center; gap: 12px; position: relative;
+        }
+        .math-display { font-size: 28px; font-weight: 900; color: var(--splat-yellow); text-shadow: 2px 2px 0px #000; letter-spacing: 1px; }
+        .math-subtext { font-size: 14px; color: #FFF; line-height: 1.5; background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 12px; border: 4px solid var(--splat-yellow); width: 90%; max-width: 500px; box-sizing: border-box; text-align: left; }
+        #preview-container { display: none; flex-direction: column; align-items: center; gap: 8px; width: 100%; height: 100%; justify-content: center; }
+        #preview-img { max-height: 180px; border-radius: 8px; border: 2px solid var(--splat-yellow); }
+        #speech-banner {
+            background: rgba(17, 20, 32, 0.95); border: 2px solid var(--splat-yellow);
+            border-radius: 14px; padding: 12px 16px; color: #FF0000; font-size: 14px; line-height: 1.4;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .action-bar { padding: 0 10px 10px; display: flex; gap: 8px; justify-content: center; }
+        .btn-action {
+            border: none; border-radius: 24px; font-weight: 900; font-size: 14px; cursor: pointer;
+            padding: 12px 20px; color: #111420; display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3); transition: transform 0.1s;
+        }
+        .btn-action:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
+        #btn-q { background: var(--splat-yellow); }
+        #btn-cam { background: #00F0FF; }
+        #btn-ok { background: var(--splat-pink); color: #FF0000; }
+        #camera-modal {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+        }
+        #camera-video { width: 90%; max-width: 400px; border-radius: 12px; border: 2px solid var(--splat-yellow); }
+    </style>
 </head>
 <body>
 
-  <!-- APIキー入力バーを復活 -->
-  <div id="config-bar">
-    <span>🔑 Gemini API Key:</span>
-    <input type="text" id="apiKeyInput" placeholder="AQ...またはAIza...のキーを入力" oninput="saveKey()">
-  </div>
-  <div id="error-log"></div>
-
-  <header>
-    <div id="avatar-box">
-      <svg id="avatar-svg" viewBox="0 0 100 100">
-        <path d="M 15 45 A 38 38 0 0 1 85 45" stroke="#333" stroke-width="8" fill="none"/>
-        <path d="M 20 40 C 5 60 10 85 25 80 C 35 75 30 50 30 40" fill="#E6FF00"/>
-        <path d="M 80 40 C 95 60 90 85 75 80 C 65 75 70 50 70 40" fill="#E6FF00"/>
-        <ellipse cx="50" cy="50" rx="28" ry="26" fill="#FFDFC4"/>
-        <path d="M 24 48 C 30 38 42 38 50 44 C 58 38 70 38 76 48 C 42 58 28 58 24 48 Z" fill="#111420"/>
-        <g id="eyes">
-          <circle cx="37" cy="47" r="6" fill="#E6FF00"/><circle cx="63" cy="47" r="6" fill="#E6FF00"/>
-          <circle cx="37" cy="47" r="3" fill="#000"/><circle cx="63" cy="47" r="3" fill="#000"/>
-          <circle cx="35" cy="45" r="1.5" fill="#FFF"/><circle cx="61" cy="45" r="1.5" fill="#FFF"/>
-        </g>
-        <path d="M 26 36 C 35 20 65 20 74 36 C 60 28 55 38 50 30 C 45 38 40 28 26 36 Z" fill="#E6FF00"/>
-        <rect x="10" y="38" width="10" height="20" rx="4" fill="#6E00FF" stroke="#FFF" stroke-width="2"/>
-        <rect x="80" y="38" width="10" height="20" rx="4" fill="#6E00FF" stroke="#FFF" stroke-width="2"/>
-        <path id="mouth" d="M 43 62 Q 50 68 57 62" stroke="#111420" stroke-width="3" stroke-linecap="round" fill="none"/>
-        <g id="effect-mark" transform="translate(68, 5) scale(0.7)" style="display:none;">
-          <path d="M 10 0 L 20 15 L 14 15 L 14 25 L 6 25 L 6 15 L 0 15 Z" fill="#E6FF00" stroke="#000" stroke-width="2"/>
-        </g>
-      </svg>
-      <div class="character-title">
-        <span class="character-name">算数コーチ カズくん</span>
-        <span class="character-sub">小4 算数専属パートナー</span>
-      </div>
-    </div>
-    <div class="header-btns">
-      <button class="btn-report" onclick="toggleReport()">📊 ろぐ・そうだん</button>
-    </div>
-  </header>
-
-  <main>
-    <section id="board-container">
-      <div class="board-header">
-        <span>COACH BOARD（解説・図解エリア）</span>
-        <span id="ai-status" style="color: var(--splat-yellow);">質問をまってるぞ！</span>
-      </div>
-      <div id="board-content">
-        <img id="preview-img" alt="撮影画像">
-        <div class="math-display" id="main-math">もんだいを選んでね</div>
-        <div class="math-subtext" id="math-subtext">「カメラ」でノートをうつすか、「質問する」でおしえてね！</div>
-      </div>
-    </section>
-
-    <div id="speech-banner">
-      <span id="speech-text">「ノートや問題集をカメラで見せてね！」</span>
+    <div id="config-bar">
+        <span>Gemini API Key:</span>
+        <input type="password" id="api-key-input" placeholder="APIキーを入力してね">
     </div>
 
-    <!-- レポート・ログモーダル -->
-    <div id="report-modal">
-      <button class="btn-close-modal" onclick="toggleReport()">✕ とじる</button>
-      <h2>📊 過去のきろく と 追加そうだん</h2>
-      <div id="report-list">まだきろくがありません。</div>
-    </div>
-  </main>
+    <header>
+        <div id="avatar-box">
+            <svg width="44" height="44" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="#6E00FF" stroke="#E6FF00" stroke-width="8"/>
+                <circle cx="35" cy="40" r="8" fill="#E6FF00"/>
+                <circle cx="65" cy="40" r="8" fill="#E6FF00"/>
+                <path d="M 35 65 Q 50 80 65 65" stroke="#E6FF00" stroke-width="6" fill="none" stroke-linecap="round"/>
+            </svg>
+            <div class="character-title">
+                <span class="character-name">算数コーチ カズくん</span>
+                <span class="character-sub">小4 算数専用パートナー</span>
+            </div>
+        </div>
+        <div class="header-btns">
+            <button class="btn-report" id="btn-log">ろぐ・そうだん</button>
+        </div>
+    </header>
 
-  <div class="action-bar">
-    <button class="btn-action btn-mic" onclick="toggleSpeech()">🎙️ 質問する</button>
-    <button class="btn-action btn-cam" onclick="triggerCamera()">📷 カメラ</button>
-    <button class="btn-action btn-understood" onclick="onUnderstood()">👍 わかった！</button>
-  </div>
+    <main>
+        <div id="board-container">
+            <div class="board-header">COACH BOARD (解説・図解エリア)</div>
+            <div id="board-content">
+                <div class="math-display">きょうのめいけん</div>
+                <div class="math-subtext" id="coach-speech">
+                    こんにちは！きみのもんだいを見せてね。<br>「カメラ」でノートをうつすか、「質問する」でおしえてね！
+                </div>
+                <div id="preview-container">
+                    <img id="preview-img" alt="プレビュー">
+                    <span style="font-size: 11px; color: #A0A5C0;">この画像を読み込むよ！</span>
+                </div>
+            </div>
+            
+            <!-- カメラ撮影用モーダル -->
+            <div id="camera-modal">
+                <video id="camera-video" autoplay playsinline></video>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-action" id="snap-btn" style="background: var(--splat-yellow);">しゃしんをとる</button>
+                    <button class="btn-action" id="close-cam-btn" style="background: #A0A5C0;">やめる</button>
+                </div>
+            </div>
+        </div>
 
-  <input type="file" id="camera-input" accept="image/*" capture="user" style="display:none" onchange="handleImageSelect(event)">
+        <div class="action-bar">
+            <button class="btn-action" id="btn-q">🎙️ 質問する</button>
+            <button class="btn-action" id="btn-cam">📷 カメラ</button>
+            <button class="btn-action" id="btn-ok">👍 わかった！</button>
+        </div>
+    </main>
 
-  <script>
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSE(type) {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+    <canvas id="capture-canvas" style="display:none;"></canvas>
 
-      if (type === 'understood') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.15);
-      } else if (type === 'start') {
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-      }
-    }
+    <script>
+        // APIキーの保存・復元
+        const apiKeyInput = document.getElementById('api-key-input');
+        const savedKey = localStorage.getItem('gemini_api_key');
+        if (savedKey) apiKeyInput.value = savedKey;
 
-    let learningHistory = [];
-    let currentContextPrompt = "算数の問題について";
-
-    // APIキーの保存処理（入力のたびに即時保存）
-    function saveKey() {
-      let key = document.getElementById('apiKeyInput').value.trim();
-      if(key) { 
-        localStorage.setItem('gemini_api_key', key); 
-        showError(''); 
-      }
-    }
-
-    // 起動時にローカルストレージからキーを復元
-    window.addEventListener('DOMContentLoaded', () => {
-      const saved = localStorage.getItem('gemini_api_key');
-      if (saved) {
-        document.getElementById('apiKeyInput').value = saved;
-      }
-    });
-    
-    function showError(msg) {
-      const el = document.getElementById('error-log');
-      if(msg) { el.style.display = 'block'; el.innerText = '⚠️ エラー: ' + msg; }
-      else { el.style.display = 'none'; }
-    }
-
-    function setKazuEmotion(state, statusText) {
-      const svg = document.getElementById('avatar-svg');
-      const eyes = document.getElementById('eyes');
-      const mouth = document.getElementById('mouth');
-      const mark = document.getElementById('effect-mark');
-      
-      document.getElementById('ai-status').innerText = statusText;
-      svg.style.transform = 'scale(1.15) rotate(-3deg)';
-      setTimeout(() => svg.style.transform = 'scale(1.0) rotate(0deg)', 200);
-
-      mark.style.display = 'none';
-
-      if (state === 'listen') {
-        eyes.innerHTML = `<circle cx="37" cy="47" r="7" fill="#E6FF00"/><circle cx="63" cy="47" r="7" fill="#E6FF00"/><circle cx="37" cy="47" r="4" fill="#000"/><circle cx="63" cy="47" r="4" fill="#000"/>`;
-        mouth.setAttribute('d', 'M 45 64 A 5 5 0 1 0 55 64 A 5 5 0 1 0 45 64');
-      } else if (state === 'think') {
-        eyes.innerHTML = `<ellipse cx="37" cy="44" rx="5" ry="3" fill="#E6FF00"/><ellipse cx="63" cy="44" rx="5" ry="3" fill="#E6FF00"/>`;
-        mouth.setAttribute('d', 'M 44 65 L 56 63');
-      } else if (state === 'spark') {
-        eyes.innerHTML = `<path d="M 31 47 L 43 47 M 37 41 L 37 53" stroke="#E6FF00" stroke-width="3"/><path d="M 57 47 L 69 47 M 63 41 L 63 53" stroke="#E6FF00" stroke-width="3"/>`;
-        mouth.setAttribute('d', 'M 40 60 Q 50 72 60 60 Z');
-        mark.style.display = 'block';
-      } else {
-        eyes.innerHTML = `<circle cx="37" cy="47" r="6" fill="#E6FF00"/><circle cx="63" cy="47" r="6" fill="#E6FF00"/><circle cx="37" cy="47" r="3" fill="#000"/><circle cx="63" cy="47" r="3" fill="#000"/>`;
-        mouth.setAttribute('d', 'M 43 62 Q 50 68 57 62');
-      }
-    }
-
-    function triggerCamera() {
-      document.getElementById('camera-input').click();
-    }
-
-    function handleImageSelect(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        const base64Data = e.target.result.split(',')[1];
-        const previewEl = document.getElementById('preview-img');
-        previewEl.src = e.target.result;
-        previewEl.style.display = 'block';
-
-        document.getElementById('speech-text').innerText = "「写真をよみこんだぞ！どこがわからないかおしえてね！」";
-        await askGemini("この画像の算数の問題をよみとって、まずは「どんなもんだいかな？どこがわからないかな？」と生徒にやさしくきいてください。", base64Data);
-      };
-      reader.readAsDataURL(file);
-    }
-
-    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition = Recognition ? new Recognition() : null;
-    if (recognition) {
-      recognition.lang = 'ja-JP';
-      recognition.onresult = async (event) => {
-        const userText = event.results[0][0].transcript;
-        document.getElementById('speech-text').innerText = `きみ: 「${userText}」`;
-        await askGemini(`前のそうだん（${currentContextPrompt}）につづいて、いま生徒がこう言っています：「${userText}」。これに対するヒントや解説を教えて。`);
-      };
-    }
-
-    function toggleSpeech() {
-      if (!recognition) return alert('対応ブラウザをご使用ください。');
-      playSE('start');
-      if ('speechSynthesis' in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
-      recognition.start();
-      setKazuEmotion('listen', 'きいているよ！');
-    }
-
-    async function askGemini(promptText, base64Image = null) {
-      saveKey();
-      let apiKey = document.getElementById('apiKeyInput').value.trim();
-      if (!apiKey) { 
-        showError('上部の紫色の枠に APIキー を入力してね！'); 
-        setKazuEmotion('normal', '質問をまってるぞ！'); 
-        return; 
-      }
-
-      setKazuEmotion('think', 'かんがえ中...');
-
-      const systemInstruction = `あなたは小学4年生の専属算数コーチ『カズくん』です。
-【たいせつなルール】
-1. 答え（数）を直接教えない。ヒントや考え方を教える。
-2. **小学4年生までに習う漢字だけ**を使ってください（むずかしい漢字はひらがなにすること）。
-3. 出力はMarkdownのバッククォート（```json）などを一切使わず、**必ず純粋なJSON文字列のみ**を出力してください。余計な文字を含めないこと。
-
-出力JSONフォーマット:
-{"boardMath":"もんだいや式のまとめ", "boardSub":"【考え方ヒント】次のステップ", "speech":"児童への語りかけ（小学4年までの漢字）"}`;
-
-      const contentsParts = [];
-      if (base64Image) {
-        contentsParts.push({ inline_data: { mime_type: "image/jpeg", data: base64Image } });
-      }
-      contentsParts.push({ text: `${systemInstruction}\n\n問いかけ: ${promptText}` });
-
-      const url = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$){encodeURIComponent(apiKey)}`;
-
-      try {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: contentsParts }] })
+        apiKeyInput.addEventListener('input', () => {
+            localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
         });
 
-        if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.error ? `[${errData.error.code}] ${errData.error.message}` : `HTTP ${res.status}`);
+        // DOM要素
+        const speechElem = document.getElementById('coach-speech');
+        const btnCam = document.getElementById('btn-cam');
+        const cameraModal = document.getElementById('camera-modal');
+        const cameraVideo = document.getElementById('camera-video');
+        const snapBtn = document.getElementById('snap-btn');
+        const closeCamBtn = document.getElementById('close-cam-btn');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImg = document.getElementById('preview-img');
+        const mathDisplay = document.querySelector('.math-display');
+
+        let mediaStream = null;
+        let capturedBase64 = null;
+
+        // カメラ起動処理（iPadのSafari対応）
+        btnCam.addEventListener('click', async () => {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    alert('お使いのブラウザはカメラに対応していません。');
+                    return;
+                }
+                cameraModal.style.display = 'flex';
+                mediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }, 
+                    audio: false 
+                });
+                cameraVideo.srcObject = mediaStream;
+            } catch (err) {
+                alert('カメラをひらけませんでした: ' + err.message);
+                cameraModal.style.display = 'none';
+            }
+        });
+
+        // 写真撮影
+        snapBtn.addEventListener('click', () => {
+            const canvas = document.getElementById('capture-canvas');
+            canvas.width = cameraVideo.videoWidth || 640;
+            canvas.height = cameraVideo.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+            
+            capturedBase64 = canvas.toDataURL('image/jpeg');
+            previewImg.src = capturedBase64;
+            
+            // プレビュー表示切り替え
+            mathDisplay.style.display = 'none';
+            speechElem.style.display = 'none';
+            previewContainer.style.display = 'flex';
+
+            stopCamera();
+        });
+
+        // カメラを閉じる・やめる
+        closeCamBtn.addEventListener('click', () => {
+            stopCamera();
+            cameraModal.style.display = 'none';
+        });
+
+        function stopCamera() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
         }
 
-        const data = await res.json();
-        let rawText = data.candidates[0].content.parts[0].text.trim();
-        
-        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const jsonStart = rawText.indexOf('{');
-        const jsonEnd = rawText.lastIndexOf('}');
-        if (jsonStart !== -1 && jsonEnd !== -1) {
-            rawText = rawText.substring(jsonStart, jsonEnd + 1);
-        }
+        // 質問するボタン（音声認識のモック/簡易処理）
+        document.getElementById('btn-q').addEventListener('click', () => {
+            speechElem.innerHTML = "「先生、ここがわからないよ！」って声に出して教えてね。（音声入力準備中）";
+        });
 
-        const aiResponse = JSON.parse(rawText);
-
-        document.getElementById('main-math').innerText = aiResponse.boardMath;
-        document.getElementById('math-subtext').innerText = aiResponse.boardSub;
-        document.getElementById('speech-text').innerText = `「${aiResponse.speech}」`;
-        
-        currentContextPrompt = aiResponse.boardMath;
-        addReport(currentContextPrompt, aiResponse.boardMath, aiResponse.boardSub);
-
-        setKazuEmotion('spark', 'おっけー！');
-        showError('');
-        speakText(aiResponse.speech);
-      } catch (err) {
-        showError(err.message || 'つうしんエラー');
-        setKazuEmotion('normal', 'エラー');
-      }
-    }
-
-    function onUnderstood() {
-      playSE('understood');
-      setKazuEmotion('spark', 'かいけつ！');
-      const speechText = "すごいぞ！自分で考えてわかったのがいちばん大切だ！";
-      document.getElementById('speech-text').innerText = `「${speechText}」`;
-      speakText(speechText);
-    }
-
-    function addReport(title, math, hint) {
-      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      learningHistory.unshift({ time, title, math, hint });
-      renderReport();
-    }
-
-    function renderReport() {
-      const container = document.getElementById('report-list');
-      if (learningHistory.length === 0) {
-        container.innerHTML = "まだきろくがありません。";
-        return;
-      }
-      container.innerHTML = learningHistory.map((item, idx) => `
-        <div class="report-item">
-          <div class="report-time">⏰ ${item.time} - ${item.title}</div>
-          <div><strong>ボード:</strong> ${item.math}</div>
-          <div><strong>ヒント:</strong> ${item.hint}</div>
-          <button class="btn-resume" onclick="resumeSession(${idx})">💬 このもんだいをつづきからそうだんする</button>
-        </div>
-      `).join('');
-    }
-
-    function resumeSession(idx) {
-      const item = learningHistory[idx];
-      currentContextPrompt = item.title;
-      document.getElementById('main-math').innerText = item.math;
-      document.getElementById('math-subtext').innerText = item.hint;
-      document.getElementById('speech-text').innerText = `(" + item.title + " の続きだな！どこが知りたいか教えてね！)`;
-      document.getElementById('speech-text').innerText = `「${item.title}の続きだな！どこが知りたいか教えてね！」`;
-      toggleReport();
-      speakText("続きの相談だな！何が知りたいか教えてね！");
-    }
-
-    function toggleReport() {
-      const modal = document.getElementById('report-modal');
-      modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
-    }
-
-    function speakText(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const uttr = new SpeechSynthesisUtterance(text);
-        uttr.lang = 'ja-JP';
-        uttr.pitch = 1.1;
-        uttr.rate = 1.0;
-        uttr.onend = () => setKazuEmotion('normal', '質問をまってるぞ！');
-        window.speechSynthesis.speak(uttr);
-      }
-    }
-  </script>
+        // わかった！ボタン
+        document.getElementById('btn-ok').addEventListener('click', () => {
+            previewContainer.style.display = 'none';
+            mathDisplay.style.display = 'block';
+            speechElem.style.display = 'block';
+            speechElem.innerHTML = "すごい！そのちょうしだね！ほかの問題もチャレンジしてみよう！";
+            capturedBase64 = null;
+        });
+    </script>
 </body>
 </html>
