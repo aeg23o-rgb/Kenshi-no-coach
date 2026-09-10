@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん (v3.5)</title>
+    <title>AI学習コーチ - カズくん (v3.6)</title>
     <style>
         :root {
             --splat-yellow: #E6FF00;
@@ -105,7 +105,7 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v3.5</button>
+            <button class="btn-report" id="btn-log">v3.6</button>
         </div>
     </header>
 
@@ -145,17 +145,15 @@
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
-        console.log("Kazu-kun Coach v3.5 loaded successfully.");
+        console.log("Kazu-kun Coach v3.6 loaded successfully.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         
-        // 起動時に保存されたキーを復元
         const savedKey = localStorage.getItem('gemini_api_key');
         if (savedKey) {
             apiKeyInput.value = savedKey;
         }
 
-        // 入力されるたびに確実にlocalStorageへ保存
         apiKeyInput.addEventListener('input', () => {
             const val = apiKeyInput.value.trim();
             localStorage.setItem('gemini_api_key', val);
@@ -199,10 +197,8 @@
                 return;
             }
 
-            console.log("Using API Key (first 6 chars):", apiKey.substring(0, 6));
-
-            // ヘッダー認証（x-goog-api-key）を使用する正しいエンドポイント形式
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
+            // モデル名を確実に存在する gemini-1.5-pro に変更し、URLパラメータとヘッダーの両方でキーを渡す
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`;
             
             let contents = [{
                 parts: [
