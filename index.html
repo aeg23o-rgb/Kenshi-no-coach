@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん (v3.8)</title>
+    <title>AI学習コーチ - カズくん (v4.0 安定版)</title>
     <style>
         :root {
             --splat-yellow: #E6FF00;
@@ -105,7 +105,7 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v3.8</button>
+            <button class="btn-report" id="btn-log">v4.0</button>
         </div>
     </header>
 
@@ -125,7 +125,6 @@
                 </div>
             </div>
             
-            <!-- カメラ撮影用モーダル -->
             <div id="camera-modal">
                 <video id="camera-video" autoplay playsinline muted></video>
                 <div style="display: flex; gap: 10px;">
@@ -145,18 +144,14 @@
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
-        console.log("Kazu-kun Coach v3.8 loaded successfully.");
+        console.log("Kazu-kun Coach v4.0 loaded successfully.");
 
         const apiKeyInput = document.getElementById('api-key-input');
-        
         const savedKey = localStorage.getItem('gemini_api_key');
-        if (savedKey) {
-            apiKeyInput.value = savedKey;
-        }
+        if (savedKey) apiKeyInput.value = savedKey;
 
         apiKeyInput.addEventListener('input', () => {
-            const val = apiKeyInput.value.trim();
-            localStorage.setItem('gemini_api_key', val);
+            localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
         });
 
         const speechElem = document.getElementById('coach-speech');
@@ -190,6 +185,30 @@
             window.speechSynthesis.speak(utter);
         }
 
+        // 利用可能なモデルを自動検出する関数
+        async function getAvailableModel(apiKey) {
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                if (!res.ok) return 'gemini-1.5-flash'; // フォールバック
+                const data = await res.json();
+                if (data.models) {
+                    // generateContentをサポートしている flash または pro モデルを優先的に探す
+                    const validModel = data.models.find(m => 
+                        m.supportedGenerationMethods && 
+                        m.supportedGenerationMethods.includes('generateContent') &&
+                        (m.name.includes('flash') || m.name.includes('pro'))
+                    );
+                    if (validModel) {
+                        // "models/gemini-1.5-flash" のような形式からプレフィックスを外すかそのまま返す
+                        return validModel.name.replace('models/', '');
+                    }
+                }
+            } catch (e) {
+                console.warn("Model fetch failed, using default", e);
+            }
+            return 'gemini-1.5-flash';
+        }
+
         async function askGemini(promptText, base64Image = null) {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
@@ -197,8 +216,10 @@
                 return;
             }
 
-            // 正しい最新の標準モデル gemini-2.0-flash を指定
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            setStatus("準備中...", "使えるモデルを確認しているよ...");
+            const modelName = await getAvailableModel(apiKey);
+            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
             
             let contents = [{
                 parts: [
@@ -217,12 +238,10 @@
             }
 
             try {
-                setStatus("考え中...", "カズくんが考えているよ...");
+                setStatus("考え中...", `(${modelName}) カズくんが考えているよ...`);
                 const response = await fetch(url, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: contents })
                 });
 
@@ -253,10 +272,7 @@
                 }
                 setStatus("カメラ起動中...", "ノートをカメラにうつしてね！");
                 cameraModal.style.display = 'flex';
-                mediaStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: true, 
-                    audio: false 
-                });
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
                 cameraVideo.srcObject = mediaStream;
             } catch (err) {
                 alert('カメラをひらけませんでした: ' + err.message);
