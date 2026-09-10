@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん (v1.3)</title>
+    <title>AI学習コーチ - カズくん (v1.4)</title>
     <style>
         :root {
             --splat-yellow: #E6FF00;
@@ -60,11 +60,11 @@
             justify-content: center; padding: 16px; text-align: center; gap: 12px; position: relative;
             overflow-y: auto;
         }
-        .math-display { font-size: 22px; font-weight: 900; color: var(--splat-yellow); text-shadow: 2px 2px 0px #000; letter-spacing: 1px; }
+        .math-display { font-size: 20px; font-weight: 900; color: var(--splat-yellow); text-shadow: 2px 2px 0px #000; letter-spacing: 1px; }
         .math-subtext { font-size: 13px; color: #FFF; line-height: 1.5; background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 12px; border: 4px solid var(--splat-yellow); width: 90%; max-width: 500px; box-sizing: border-box; text-align: left; }
         
-        #preview-container { display: none; flex-direction: column; align-items: center; gap: 6px; width: 100%; margin-bottom: 8px; }
-        #preview-img { max-height: 100px; border-radius: 6px; border: 2px solid var(--splat-yellow); }
+        #preview-container { display: none; flex-direction: column; align-items: center; gap: 6px; width: 100%; margin-bottom: 4px; }
+        #preview-img { max-height: 110px; border-radius: 6px; border: 2px solid var(--splat-yellow); }
 
         .action-bar { padding: 0 10px 10px; display: flex; gap: 8px; justify-content: center; }
         .btn-action {
@@ -105,7 +105,7 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v1.3</button>
+            <button class="btn-report" id="btn-log">v1.4</button>
         </div>
     </header>
 
@@ -119,7 +119,7 @@
                 <div id="preview-container">
                     <img id="preview-img" alt="プレビュー">
                 </div>
-                <div class="math-display" id="main-title">きょうのめいけん</div>
+                <div class="math-display" id="main-title">きょうのチャレンジ問題</div>
                 <div class="math-subtext" id="coach-speech">
                     こんにちは！きみのもんだいを見せてね。<br>「カメラ」でノートをうつすか、「質問する」でおしえてね！
                 </div>
@@ -145,7 +145,7 @@
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
-        console.log("Kazu-kun Coach v1.3 loaded.");
+        console.log("Kazu-kun Coach v1.4 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -176,19 +176,18 @@
             }
         }
 
-        // 音声読み上げ関数 (SpeechSynthesis)
+        // 音声読み上げ
         function speakText(text) {
             if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel(); // 喋り中のものをリセット
-            // HTMLタグを除去して音声化
+            window.speechSynthesis.cancel();
             const cleanText = text.replace(/<[^>]*>?/gm, '');
             const utter = new SpeechSynthesisUtterance(cleanText);
             utter.lang = 'ja-JP';
-            utter.rate = 1.1; // 少し元気なテンポ
+            utter.rate = 1.1;
             window.speechSynthesis.speak(utter);
         }
 
-        // Gemini APIコール関数
+        // Gemini API呼び出し (安定版モデル gem-1.5-flash を使用)
         async function askGemini(promptText, base64Image = null) {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
@@ -196,9 +195,8 @@
                 return;
             }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
-            let contentsArray = [];
             let parts = [{ text: "あなたは小学4年生の算数専用のやさしいAIコーチ「カズくん」です。子供に寄り添い、答えを直接教えるのではなく、ヒントや考え方をわかりやすく短く（3行程度で）解説してください。\n\n" + promptText }];
             
             if (base64Image) {
@@ -210,13 +208,12 @@
                     }
                 });
             }
-            contentsArray.push({ parts: parts });
 
             try {
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: contentsArray })
+                    body: JSON.stringify({ contents: [{ parts: parts }] })
                 });
 
                 const data = await response.json();
@@ -224,9 +221,11 @@
                     const aiText = data.candidates[0].content.parts[0].text;
                     setStatus("解説中", aiText.replace(/\n/g, '<br>'));
                 } else {
-                    setStatus("エラー", "うまく答えがもらえなかったよ。もう一度試してね。");
+                    console.error("API Error Data:", data);
+                    setStatus("エラー", "うまく答えがもらえなかったよ。APIキーや通信をかくしてね。");
                 }
             } catch (err) {
+                console.error("Fetch Error:", err);
                 setStatus("通信エラー", "エラーが起きたよ: " + err.message);
             }
         }
@@ -252,7 +251,7 @@
             }
         });
 
-        // 写真撮影 ＆ API送信
+        // 写真撮影 ＆ 送信
         snapBtn.addEventListener('click', () => {
             const canvas = document.getElementById('capture-canvas');
             canvas.width = cameraVideo.videoWidth || 640;
@@ -266,13 +265,11 @@
             stopCamera();
             cameraModal.style.display = 'none';
 
-            // プレビューとステータス更新
             mainTitle.style.display = 'none';
             previewContainer.style.display = 'flex';
             
             setStatus("考え中...", "写真をとったよ！カズくんが問題をよみとっています...");
             
-            // Gemini APIへ画像付きで質問送信
             askGemini("このノートに書かれている算数の問題を見て、小4の子に向けて解き方のヒントや考え方を優しく教えてください。", capturedBase64);
         });
 
@@ -290,12 +287,11 @@
             }
         }
 
-        // 質問するボタン（音声認識 ＆ API送信）
+        // 質問するボタン
         document.getElementById('btn-q').addEventListener('click', () => {
             previewContainer.style.display = 'none';
             mainTitle.style.display = 'block';
             
-            // Web Speech API (音声認識) が使える場合の処理
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (SpeechRecognition) {
                 const recognition = new SpeechRecognition();
@@ -318,7 +314,6 @@
 
                 recognition.start();
             } else {
-                // 音声認識非対応ブラウザ向けフォールバック
                 setStatus("考え中...", "音声認識が使えない環境みたい。テキストで質問してね！");
                 askGemini("小4の算数について質問があります。わかりやすく教えてください。");
             }
