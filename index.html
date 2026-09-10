@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん (v3.3)</title>
+    <title>AI学習コーチ - カズくん (v3.4)</title>
     <style>
         :root {
             --splat-yellow: #E6FF00;
@@ -105,7 +105,7 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v3.3</button>
+            <button class="btn-report" id="btn-log">v3.4</button>
         </div>
     </header>
 
@@ -145,14 +145,20 @@
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
-        console.log("Kazu-kun Coach v3.3 loaded successfully.");
+        console.log("Kazu-kun Coach v3.4 loaded successfully.");
 
         const apiKeyInput = document.getElementById('api-key-input');
+        
+        // 起動時に保存されたキーを復元
         const savedKey = localStorage.getItem('gemini_api_key');
-        if (savedKey) apiKeyInput.value = savedKey;
+        if (savedKey) {
+            apiKeyInput.value = savedKey;
+        }
 
+        // 入力されるたびに確実にlocalStorageへ保存
         apiKeyInput.addEventListener('input', () => {
-            localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
+            const val = apiKeyInput.value.trim();
+            localStorage.setItem('gemini_api_key', val);
         });
 
         const speechElem = document.getElementById('coach-speech');
@@ -189,13 +195,12 @@
         async function askGemini(promptText, base64Image = null) {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
-                setStatus("エラー", "上の欄に Gemini APIキー を入力してね！");
+                setStatus("エラー", "上の欄に Gemini APIキー が入力されていないよ！確認してね。");
                 return;
             }
 
-            // 確実に現在サポートされているモデル名に変更 (gemini-2.5-flash または gemini-1.5-flash)
-            // ここでは最新の安定版モデル名を使用します
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            // 正しいクエリパラメータとしてのAPIキー付与を確認
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
             let contents = [{
                 parts: [
@@ -223,7 +228,7 @@
 
                 if (!response.ok) {
                     const errData = await response.text();
-                    console.error("API Error Response:", errData);
+                    console.error("API Error:", response.status, errData);
                     setStatus("HTTPエラー " + response.status, `詳細: ${errData.substring(0, 150)}`);
                     return;
                 }
