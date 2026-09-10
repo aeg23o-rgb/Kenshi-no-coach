@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v9.0 Splat Edition)</title>
+    <title>AI学習コーチ - カズ先生 (v9.1 Fix)</title>
     <script type="importmap">
       {
         "imports": {
@@ -82,7 +82,6 @@
             overflow-y: auto;
         }
         
-        /* スプラトゥーン風ステージ・アバター */
         .manga-stage {
             display: flex; gap: 12px; align-items: center; width: 96%;
             background: rgba(0,0,0,0.35); border: 3px solid var(--splat-purple); border-radius: 16px; padding: 8px 12px;
@@ -90,7 +89,6 @@
         }
         #teacher-avatar-svg { width: 64px; height: 64px; flex-shrink: 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
         
-        /* 動的SVG図解エリア */
         #visual-container {
             display: none; width: 96%; background: #0D101A;
             border: 2px solid var(--splat-cyan); border-radius: 12px; padding: 8px; flex-direction: column; align-items: center; justify-content: center;
@@ -103,7 +101,6 @@
 
         .board-text-title { font-size: 13px; font-weight: 900; color: var(--splat-cyan); text-shadow: 1px 1px 0px #000; align-self: flex-start; margin-left: 2%; display: flex; align-items: center; gap: 4px;}
         
-        /* ホワイトボード本文：チョーク風テキストエリア */
         .board-text-body { 
             font-size: 15px; color: #FFF; line-height: 1.5; 
             text-align: left; width: 96%; 
@@ -150,14 +147,12 @@
         .history-item { background: rgba(255,255,255,0.04); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--splat-border); cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-align: left; }
         .history-item:hover { background: rgba(123,0,255,0.3); border-color: var(--splat-yellow); }
 
-        /* チョークのタイピングカーソル演出 */
         .typing-cursor::after {
             content: '✏️';
             animation: blink 0.5s infinite;
         }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        /* しゃべっているときの口パクアニメーション */
         @keyframes talkMouth {
             0% { d: path("M 30 60 Q 50 80 70 60"); }
             50% { d: path("M 30 65 Q 50 50 70 65"); }
@@ -172,7 +167,7 @@
 
     <div id="config-bar">
         <span>API Key:</span>
-        <input type="password" id="api-key-input" placeholder="Gemini APIキーを入力 (有料枠推奨)">
+        <input type="password" id="api-key-input" placeholder="Gemini APIキーを入力">
     </div>
 
     <header>
@@ -185,7 +180,7 @@
             </svg>
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数コーチング (v9.0 Splat)</span>
+                <span class="character-sub">小4 算数コーチング (v9.1 Fix)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -210,13 +205,10 @@
                 <div class="manga-stage" id="manga-stage">
                     <svg id="teacher-avatar-svg" viewBox="0 0 100 100">
                         <circle cx="50" cy="50" r="45" fill="var(--splat-purple)" stroke="var(--splat-yellow)" stroke-width="6"/>
-                        <!-- 目 -->
                         <circle cx="35" cy="40" r="7" fill="var(--splat-yellow)" id="eye-l"/>
                         <circle cx="65" cy="40" r="7" fill="var(--splat-yellow)" id="eye-r"/>
-                        <!-- 眉毛 -->
                         <line x1="25" y1="28" x2="45" y2="32" stroke="var(--splat-yellow)" stroke-width="4" stroke-linecap="round" id="brow-l"/>
                         <line x1="55" y1="32" x2="75" y2="28" stroke="var(--splat-yellow)" stroke-width="4" stroke-linecap="round" id="brow-r"/>
-                        <!-- 口 -->
                         <path id="mouth-path" d="M 30 60 Q 50 80 70 60" stroke="var(--splat-yellow)" stroke-width="6" fill="none" stroke-linecap="round"/>
                     </svg>
                     <div style="font-size: 12px; color: var(--splat-yellow); text-align: left; font-weight: 900; text-shadow: 1px 1px 0 #000;">
@@ -282,8 +274,6 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        console.log("Kazu-sensei Board v9.0 Splat Edition loaded.");
-
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
         if (savedKey) apiKeyInput.value = savedKey;
@@ -337,7 +327,6 @@
             });
         }
 
-        // 表情とアニメーションの変化
         function setTeacherMood(mood, moodText) {
             teacherMood.innerText = `「${moodText}」`;
             const mouth = document.getElementById('mouth-path');
@@ -359,7 +348,6 @@
             }
         }
 
-        // 動的SVG図解（よりリッチなアニメーション表現）
         function renderVisualDiagram(type) {
             visualSvg.innerHTML = '';
             if (!type || type === 'none') {
@@ -400,7 +388,6 @@
             }
         }
 
-        // ホワイトボードにチョークで文字を書き込むようなリアルタイム・タイピングアニメーション
         function typeWriterEffect(htmlText, callback) {
             if (typingTimer) clearInterval(typingTimer);
             boardSpeech.innerHTML = '';
@@ -420,24 +407,24 @@
                     boardSpeech.innerHTML = htmlText; 
                     if (callback) callback();
                 }
-            }, 20); // 速度を少し上げてサクサク表示
+            }, 20);
         }
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v9') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v91') || '{}');
             sessions[currentSessionId] = {
                 title: currentSessionTitle,
                 updatedAt: new Date().toLocaleString(),
                 history: chatHistory,
                 lastSpeech: boardSpeech.innerHTML
             };
-            localStorage.setItem('kazu_sessions_v9', JSON.stringify(sessions));
+            localStorage.setItem('kazu_sessions_v91', JSON.stringify(sessions));
         }
 
         function loadSessionList() {
             historyListContainer.innerHTML = '';
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v9') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v91') || '{}');
             const keys = Object.keys(sessions);
             
             if (keys.length === 0) {
@@ -512,7 +499,6 @@
             }
         }
 
-        // 音声合成とアニメーション連動
         function speakText(text) {
             if (!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
@@ -522,15 +508,9 @@
             utter.rate = 1.1; 
             utter.pitch = 1.05;
 
-            utter.onstart = () => {
-                mangaStage.classList.add('speaking');
-            };
-            utter.onend = () => {
-                mangaStage.classList.remove('speaking');
-            };
-            utter.onerror = () => {
-                mangaStage.classList.remove('speaking');
-            };
+            utter.onstart = () => { mangaStage.classList.add('speaking'); };
+            utter.onend = () => { mangaStage.classList.remove('speaking'); };
+            utter.onerror = () => { mangaStage.classList.remove('speaking'); };
 
             window.speechSynthesis.speak(utter);
         }
@@ -538,7 +518,7 @@
         async function askGemini(userInputText, base64Image = null, userDisplayText = null) {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
-                updateBoard("エラー", "APIキー未入力", "上の欄に Gemini APIキー を入力してね！有料枠のキーがおすすめだよ。", userDisplayText, 'normal', 'APIキーを入れてね');
+                updateBoard("エラー", "APIキー未入力", "上の欄に Gemini APIキー を入力してね！", userDisplayText, 'normal', 'APIキーを入れてね');
                 return;
             }
 
@@ -615,7 +595,7 @@
             } catch (err) {
                 console.error("SDK Error:", err);
                 if (err.message && err.message.includes("429")) {
-                    updateBoard("制限オーバー", "少し待ってね", "アクセスが集中しました。有料枠のキーが正しく設定されているか確認してね！", userDisplayText, 'normal', '少し休憩しよう');
+                    updateBoard("制限オーバー", "少し待ってね", "アクセスが集中しました。", userDisplayText, 'normal', '少し休憩しよう');
                 } else {
                     updateBoard("エラー発生", "通信エラー", `詳細: ${err.message}`, userDisplayText, 'normal', 'エラーが起きちゃった');
                 }
@@ -692,7 +672,7 @@
                 };
 
                 recognition.onerror = () => {
-                    updateBoard("聞き取り失敗", "もう一度お試しください", "うまく聞き取れなかったよ。もう一度マイクボタンを押して話してね！", null, 'normal', 'もう一度教えて！');
+                    updateBoard("聞き取り失敗", "もう一度お試しください", "うまく聞き取れなかったよ。", null, 'normal', 'もう一度教えて！');
                 };
 
                 recognition.start();
