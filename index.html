@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん (v1.7)</title>
+    <title>AI学習コーチ - カズくん (v1.8)</title>
     <style>
         :root {
             --splat-yellow: #E6FF00;
@@ -105,7 +105,7 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v1.7</button>
+            <button class="btn-report" id="btn-log">v1.8</button>
         </div>
     </header>
 
@@ -145,7 +145,7 @@
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
-        console.log("Kazu-kun Coach v1.7 loaded.");
+        console.log("Kazu-kun Coach v1.8 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -186,7 +186,7 @@
             window.speechSynthesis.speak(utter);
         }
 
-        // 利用可能なモデルを自動取得して実行する関数
+        // 標準的な gemini-1.5-flash に直接リクエストを送る
         async function askGemini(promptText, base64Image = null) {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
@@ -194,48 +194,22 @@
                 return;
             }
 
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            
+            let parts = [{ text: "あなたは小学4年生の算数専用のやさしいAIコーチ「カズくん」です。子供に寄り添い、答えを直接教えるのではなく、ヒントや考え方をわかりやすく短く（3行程度で）解説してください。\n\n" + promptText }];
+            
+            if (base64Image) {
+                const base64Data = base64Image.split(',')[1];
+                parts.push({
+                    inline_data: {
+                        mime_type: "image/jpeg",
+                        data: base64Data
+                    }
+                });
+            }
+
             try {
-                setStatus("確認中", "使えるモデルをさがしているよ...");
-                const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
-                const listRes = await fetch(listUrl);
-                
-                if (!listRes.ok) {
-                    const errText = await listRes.text();
-                    setStatus("認証エラー " + listRes.status, `APIキーを確認してね: ${errText.substring(0, 100)}`);
-                    return;
-                }
-
-                const listData = await listRes.json();
-                const models = listData.models || [];
-                
-                // generateContent が使えるモデルを優先的に探す
-                let targetModel = models.find(m => m.name.includes("flash") && m.supportedGenerationMethods?.includes("generateContent"));
-                if (!targetModel) {
-                    targetModel = models.find(m => m.supportedGenerationMethods?.includes("generateContent"));
-                }
-
-                if (!targetModel) {
-                    setStatus("エラー", "使えるAIモデルが見つからなかったよ。");
-                    return;
-                }
-
-                // モデル名（例: "models/gemini-1.5-flash"）を使ってリクエスト
-                const modelName = targetModel.name; // そのまま使える
-                const url = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${apiKey}`;
-                
-                let parts = [{ text: "あなたは小学4年生の算数専用のやさしいAIコーチ「カズくん」です。子供に寄り添い、答えを直接教えるのではなく、ヒントや考え方をわかりやすく短く（3行程度で）解説してください。\n\n" + promptText }];
-                
-                if (base64Image) {
-                    const base64Data = base64Image.split(',')[1];
-                    parts.push({
-                        inline_data: {
-                            mime_type: "image/jpeg",
-                            data: base64Data
-                        }
-                    });
-                }
-
-                setStatus("考え中...", "カズくんが問題をといているよ...");
+                setStatus("考え中...", "カズくんが考えているよ...");
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
