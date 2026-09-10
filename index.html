@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん (v3.6)</title>
+    <title>AI学習コーチ - カズくん (v3.7)</title>
     <style>
         :root {
             --splat-yellow: #E6FF00;
@@ -105,7 +105,7 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v3.6</button>
+            <button class="btn-report" id="btn-log">v3.7</button>
         </div>
     </header>
 
@@ -145,7 +145,7 @@
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
-        console.log("Kazu-kun Coach v3.6 loaded successfully.");
+        console.log("Kazu-kun Coach v3.7 loaded successfully.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         
@@ -197,8 +197,8 @@
                 return;
             }
 
-            // モデル名を確実に存在する gemini-1.5-pro に変更し、URLパラメータとヘッダーの両方でキーを渡す
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`;
+            // 最も安定している gemini-2.5-flash モデルに変更
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
             
             let contents = [{
                 parts: [
@@ -221,8 +221,7 @@
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 
-                        'Content-Type': 'application/json',
-                        'x-goog-api-key': apiKey
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ contents: contents })
                 });
