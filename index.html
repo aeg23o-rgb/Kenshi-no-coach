@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v5.1 板書風ボード)</title>
+    <title>AI学習コーチ - カズ先生 (v5.2 スプラ風ホワイトボード)</title>
     <script type="importmap">
       {
         "imports": {
@@ -13,97 +13,101 @@
     </script>
     <style>
         :root {
-            --board-bg: #1B3B2B; /* 黒板・ホワイトボード風の深緑・ダークグリーン */
-            --board-frame: #8B5A2B; /* 木製の枠をイメージ */
-            --chalk-yellow: #FFF176;
-            --chalk-white: #FFFFFF;
-            --chalk-blue: #80D8FF;
-            --splat-purple: #4A148C;
+            --splat-yellow: #E6FF00;
+            --splat-purple: #6E00FF;
+            --splat-cyan: #00F0FF;
+            --splat-pink: #FF007F;
+            --splat-bg: #111420;
+            --splat-card: #1E2235;
         }
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            font-family: 'Helvetica Neue', Arial, sans-serif; background: #111;
+            font-family: 'Arial Black', sans-serif; background: var(--splat-bg);
             overflow: hidden; display: flex; flex-direction: column; color: #FFF;
             user-select: none;
         }
         #config-bar {
-            background: #222; color: #aaa; padding: 4px 10px;
+            background: var(--splat-purple); color: #fff; padding: 4px 10px;
             display: flex; gap: 8px; align-items: center; font-size: 11px;
-            border-bottom: 1px solid #444;
+            border-bottom: 2px solid var(--splat-yellow);
         }
         #config-bar input {
-            flex: 1; padding: 3px 6px; border-radius: 4px; border: 1px solid #555;
-            font-size: 11px; background: #333; color: #FFF;
+            flex: 1; padding: 3px 6px; border-radius: 4px; border: none;
+            font-size: 11px; background: #2A1F45; color: #FFF;
         }
         header {
-            height: 48px; background: #1e1e1e;
-            border-bottom: 2px solid var(--board-frame);
+            height: 48px; background: var(--splat-card);
+            border-bottom: 3px solid var(--splat-yellow);
             display: flex; align-items: center; justify-content: space-between; padding: 0 12px;
         }
         #avatar-box { display: flex; align-items: center; gap: 8px; }
         .character-title { display: flex; flex-direction: column; }
-        .character-name { font-weight: bold; font-size: 14px; color: var(--chalk-yellow); }
-        .character-sub { font-size: 10px; color: #aaa; }
+        .character-name { font-weight: 900; font-size: 14px; color: var(--splat-yellow); text-shadow: 1px 1px 0px #000; }
+        .character-sub { font-size: 10px; color: #A0A5C0; }
         .btn-report {
-            background: var(--splat-purple); color: #FFF; border: 1px solid var(--chalk-yellow);
+            background: var(--splat-purple); color: #FFF; border: 1.5px solid var(--splat-yellow);
             padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;
         }
         main {
             flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 8px;
-            overflow: hidden; position: relative; background: #151515;
+            overflow: hidden; position: relative;
         }
-        /* 板書風ボードコンテナ */
+        
+        /* 上段：自分のコメント（発言）フレーム */
+        #user-comment-frame {
+            background: #1A1F30; border: 2px solid var(--splat-cyan);
+            border-radius: 12px; padding: 8px 12px; display: none; align-items: center; gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,240,255,0.2);
+        }
+        .user-comment-label { font-size: 11px; color: var(--splat-cyan); font-weight: bold; white-space: nowrap; }
+        .user-comment-text { font-size: 14px; color: #FFF; word-break: break-all; }
+
+        /* 下段：メインのホワイトボード（板書）フレーム */
         #board-container {
-            flex: 1; background: var(--board-bg); border-radius: 10px;
-            border: 6px solid var(--board-frame); box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            flex: 1; background: var(--splat-card); border-radius: 16px;
+            border: 4px solid var(--splat-yellow); box-shadow: 0 4px 16px rgba(110,0,255,0.3);
             display: flex; flex-direction: column; position: relative; overflow: hidden;
         }
         .board-header {
-            padding: 6px 12px; background: rgba(0,0,0,0.2); font-size: 11px;
-            color: rgba(255,255,255,0.7); font-weight: bold; border-bottom: 1px dashed rgba(255,255,255,0.2);
+            padding: 6px 12px; background: rgba(0,0,0,0.3); font-size: 11px;
+            color: #A0A5C0; font-weight: bold; border-bottom: 2px solid #2A1F45;
             display: flex; justify-content: space-between; align-items: center;
         }
         #board-content {
             flex: 1; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; padding: 16px; text-align: center; gap: 14px; position: relative;
+            justify-content: center; padding: 16px; text-align: center; gap: 12px; position: relative;
             overflow-y: auto;
         }
         
-        /* ユーザーの発言表示エリア */
-        #user-speech-bubble {
-            display: none; background: rgba(0,0,0,0.3); border-left: 4px solid var(--chalk-blue);
-            padding: 8px 12px; border-radius: 4px; font-size: 13px; color: var(--chalk-blue);
-            width: 90%; max-width: 500px; text-align: left;
-        }
-
         #preview-container { display: none; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
-        #preview-img { max-height: 90px; border-radius: 4px; border: 2px solid var(--chalk-yellow); }
+        #preview-img { max-height: 80px; border-radius: 6px; border: 2px solid var(--splat-yellow); }
 
-        /* 板書の文字（大きめで読みやすく） */
-        .board-text-title { font-size: 16px; font-weight: bold; color: var(--chalk-yellow); letter-spacing: 0.5px; }
+        /* ホワイトボード内の文字（大きく、見やすく） */
+        .board-text-title { font-size: 18px; font-weight: 900; color: var(--splat-yellow); text-shadow: 1px 1px 0px #000; letter-spacing: 1px; }
         .board-text-body { 
-            font-size: 18px; color: var(--chalk-white); line-height: 1.6; 
+            font-size: 20px; color: #FFF; line-height: 1.6; 
             text-align: left; width: 92%; max-width: 550px; 
-            padding: 10px; box-sizing: border-box; 
-            font-family: 'Courier New', Courier, monospace; /* チョーク・手書き風の雰囲気を出すため */
+            padding: 14px; box-sizing: border-box; 
+            background: rgba(0,0,0,0.2); border-radius: 12px; border: 2px solid rgba(255,255,255,0.1);
+            font-weight: bold;
         }
         
         .action-bar { padding: 0 4px 4px; display: flex; gap: 8px; justify-content: center; }
         .btn-action {
-            border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer;
-            padding: 12px 18px; color: #FFF; display: flex; align-items: center; gap: 6px;
-            box-shadow: 0 3px 0 rgba(0,0,0,0.4); transition: transform 0.1s;
+            border: none; border-radius: 20px; font-weight: 900; font-size: 13px; cursor: pointer;
+            padding: 12px 16px; color: #111420; display: flex; align-items: center; gap: 4px;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3); transition: transform 0.1s;
         }
-        .btn-action:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.4); }
-        #btn-q { background: #1976D2; }
-        #btn-cam { background: #00897B; }
-        #btn-ok { background: #C2185B; }
+        .btn-action:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
+        #btn-q { background: var(--splat-yellow); }
+        #btn-cam { background: var(--splat-cyan); }
+        #btn-ok { background: var(--splat-pink); color: #FFF; }
         
         #camera-modal {
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+            background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
         }
-        #camera-video { width: 90%; max-width: 400px; max-height: 60vh; border-radius: 8px; border: 2px solid var(--chalk-yellow); object-fit: cover; }
+        #camera-video { width: 90%; max-width: 400px; max-height: 60vh; border-radius: 12px; border: 2px solid var(--splat-yellow); object-fit: cover; }
     </style>
 </head>
 <body>
@@ -116,47 +120,50 @@
     <header>
         <div id="avatar-box">
             <svg width="36" height="36" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="45" fill="#4A148C" stroke="#FFF176" stroke-width="6"/>
-                <circle cx="35" cy="40" r="7" fill="#FFF176"/>
-                <circle cx="65" cy="40" r="7" fill="#FFF176"/>
-                <path d="M 35 65 Q 50 75 65 65" stroke="#FFF176" stroke-width="5" fill="none" stroke-linecap="round"/>
+                <circle cx="50" cy="50" r="45" fill="#6E00FF" stroke="#E6FF00" stroke-width="6"/>
+                <circle cx="35" cy="40" r="7" fill="#E6FF00"/>
+                <circle cx="65" cy="40" r="7" fill="#E6FF00"/>
+                <path d="M 35 65 Q 50 75 65 65" stroke="#E6FF00" stroke-width="5" fill="none" stroke-linecap="round"/>
             </svg>
             <div class="character-title">
-                <span class="character-name">カズ先生の黒板</span>
+                <span class="character-name">カズ先生のホワイトボード</span>
                 <span class="character-sub">小4 算数コーチング</span>
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v5.1</button>
+            <button class="btn-report" id="btn-log">v5.2</button>
         </div>
     </header>
 
     <main>
+        <!-- 自分のコメント（発言）を表示する独立フレーム -->
+        <div id="user-comment-frame">
+            <span class="user-comment-label">🗣️ あなた:</span>
+            <span class="user-comment-text" id="user-comment-text">ここにあなたの言葉が出ます</span>
+        </div>
+
         <div id="board-container">
             <div class="board-header">
-                <span id="board-status">【板書モード：待機中】</span>
-                <span>算数ルーム</span>
+                <span id="board-status">【ステータス：待機中】</span>
+                <span>SPLASH BOARD</span>
             </div>
             <div id="board-content">
-                <!-- ユーザーの発言内容を表示 -->
-                <div id="user-speech-bubble"></div>
-
                 <div id="preview-container">
                     <img id="preview-img" alt="プレビュー">
                 </div>
                 
                 <div class="board-text-title" id="board-title">カズ先生からのメッセージ</div>
                 <div class="board-text-body" id="board-speech">
-                    こんにちは！解きたいもんだいを「カメラ」でうつすか、<br>
-                    「質問する」ボタンでおしえてね。一緒に考えていこう！
+                    こんにちは！解きたい問題を「カメラ」で写すか、<br>
+                    「質問する」ボタンでおしえてね！
                 </div>
             </div>
             
             <div id="camera-modal">
                 <video id="camera-video" autoplay playsinline muted></video>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn-action" id="snap-btn" style="background: #FBC02D; color:#000;">しゃしんをとる</button>
-                    <button class="btn-action" id="close-cam-btn" style="background: #616161;">やめる</button>
+                    <button class="btn-action" id="snap-btn" style="background: var(--splat-yellow);">しゃしんをとる</button>
+                    <button class="btn-action" id="close-cam-btn" style="background: #A0A5C0;">やめる</button>
                 </div>
             </div>
         </div>
@@ -173,7 +180,7 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        console.log("Kazu-sensei Board v5.1 loaded.");
+        console.log("Kazu-sensei Board v5.2 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -186,7 +193,8 @@
         const boardSpeech = document.getElementById('board-speech');
         const boardTitle = document.getElementById('board-title');
         const boardStatus = document.getElementById('board-status');
-        const userSpeechBubble = document.getElementById('user-speech-bubble');
+        const userCommentFrame = document.getElementById('user-comment-frame');
+        const userCommentText = document.getElementById('user-comment-text');
         
         const btnCam = document.getElementById('btn-cam');
         const cameraModal = document.getElementById('camera-modal');
@@ -199,14 +207,14 @@
         let mediaStream = null;
 
         function updateBoard(statusText, titleText, speechText, userText = null) {
-            boardStatus.innerText = `【板書モード：${statusText}】`;
+            boardStatus.innerText = `【ステータス：${statusText}】`;
             if (titleText) boardTitle.innerText = titleText;
             
             if (userText) {
-                userSpeechBubble.style.display = 'block';
-                userSpeechBubble.innerHTML = `🗣️ あなたの言葉: 「${userText}」`;
+                userCommentFrame.style.display = 'flex';
+                userCommentText.innerText = userText;
             } else {
-                userSpeechBubble.style.display = 'none';
+                userCommentFrame.style.display = 'none';
             }
 
             if (speechText) {
@@ -217,12 +225,19 @@
 
         function speakText(text) {
             if (!('speechSynthesis' in window)) return;
+            // 一度音声をリセットして確実に喋らせる
             window.speechSynthesis.cancel();
+            
             const cleanText = text.replace(/<[^>]*>?/gm, '');
             const utter = new SpeechSynthesisUtterance(cleanText);
             utter.lang = 'ja-JP';
-            utter.rate = 1.05; // 聞き取りやすいスピード
-            window.speechSynthesis.speak(utter);
+            utter.rate = 1.1; // 聞き取りやすいスピード
+            utter.pitch = 1.0;
+            
+            // ブラウザのブロック対策として遅延を入れて発話させる
+            setTimeout(() => {
+                window.speechSynthesis.speak(utter);
+            }, 100);
         }
 
         async function askGemini(promptText, base64Image = null, userDisplayText = null) {
@@ -233,12 +248,12 @@
             }
 
             try {
-                updateBoard("思考中...", "板書を準備中...", "カズ先生が黒板に書く内容を考えています...", userDisplayText);
+                updateBoard("思考中...", "カズ先生の板書準備中...", "カズ先生がホワイトボードに書く内容を考えています...", userDisplayText);
                 
                 const ai = new GoogleGenAI({ apiKey: apiKey });
 
                 const systemInstruction = `あなたは小学4年生の算数専用のやさしい指導者「カズ先生」です。
-黒板に板書するようなイメージで、以下のルールで回答してください：
+ホワイトボードに板書するようなイメージで、以下のルールで回答してください：
 1. **答えを直接教えないこと**（計算結果や答えの数値をそのまま書かない）。
 2. 子供が自分で考えられるように、最初のステップや注目すべきポイントのヒントを、**大きな文字でわかりやすく3行程度**でまとめてください。
 3. 語りかけるような優しい先生のトーンで話してください。`;
@@ -264,9 +279,9 @@
                 });
 
                 if (response && response.text) {
-                    updateBoard("解説中", "カズ先生の板書", response.text.replace(/\n/g, '<br>'), userDisplayText);
+                    updateBoard("板書表示中", "カズ先生のホワイトボード解説", response.text.replace(/\n/g, '<br>'), userDisplayText);
                 } else {
-                    updateBoard("エラー", "データなし", "黒板に文字を書けませんでした。", userDisplayText);
+                    updateBoard("エラー", "データなし", "ホワイトボードに文字を書けませんでした。", userDisplayText);
                 }
             } catch (err) {
                 console.error("SDK Error:", err);
@@ -307,7 +322,7 @@
             boardTitle.style.display = 'block';
             previewContainer.style.display = 'flex';
             
-            askGemini("このノートの問題を見て、答えを言わずに、黒板に書くように最初のヒントを教えてください。", capturedBase64, "カメラで問題を読み込みました");
+            askGemini("このノートの問題を見て、答えを言わずに、ホワイトボードに書くように最初のヒントを教えてください。", capturedBase64, "カメラで問題を撮影しました");
         });
 
         closeCamBtn.addEventListener('click', () => {
@@ -339,7 +354,7 @@
 
                 recognition.onresult = (event) => {
                     const speechResult = event.results[0][0].transcript;
-                    askGemini(`生徒からの質問: ${speechResult} （※答えは教えず、黒板に書くようにヒントを返してください）`, null, speechResult);
+                    askGemini(`生徒からの質問: ${speechResult} （※答えは教えず、ホワイトボードに書くようにヒントを返してください）`, null, speechResult);
                 };
 
                 recognition.onerror = () => {
