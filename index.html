@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v5.2 スプラ風ホワイトボード)</title>
+    <title>AI学習コーチ - カズ先生 (v6.0 伴走コーチング＆履歴管理)</title>
     <script type="importmap">
       {
         "imports": {
@@ -44,7 +44,8 @@
         .character-title { display: flex; flex-direction: column; }
         .character-name { font-weight: 900; font-size: 14px; color: var(--splat-yellow); text-shadow: 1px 1px 0px #000; }
         .character-sub { font-size: 10px; color: #A0A5C0; }
-        .btn-report {
+        .header-btns { display: flex; gap: 6px; align-items: center; }
+        .btn-tab {
             background: var(--splat-purple); color: #FFF; border: 1.5px solid var(--splat-yellow);
             padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;
         }
@@ -82,7 +83,7 @@
         #preview-container { display: none; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
         #preview-img { max-height: 80px; border-radius: 6px; border: 2px solid var(--splat-yellow); }
 
-        /* ホワイトボード内の文字（大きく、見やすく） */
+        /* ホワイトボード内の文字 */
         .board-text-title { font-size: 18px; font-weight: 900; color: var(--splat-yellow); text-shadow: 1px 1px 0px #000; letter-spacing: 1px; }
         .board-text-body { 
             font-size: 20px; color: #FFF; line-height: 1.6; 
@@ -103,11 +104,17 @@
         #btn-cam { background: var(--splat-cyan); }
         #btn-ok { background: var(--splat-pink); color: #FFF; }
         
-        #camera-modal {
+        /* モーダル共通 */
+        .modal-overlay {
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
         }
         #camera-video { width: 90%; max-width: 400px; max-height: 60vh; border-radius: 12px; border: 2px solid var(--splat-yellow); object-fit: cover; }
+        
+        /* 履歴モーダルの中身 */
+        .history-box { width: 90%; max-width: 450px; background: var(--splat-card); border: 2px solid var(--splat-yellow); border-radius: 12px; padding: 16px; max-height: 70vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .history-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .history-item:hover { background: rgba(110,0,255,0.3); }
     </style>
 </head>
 <body>
@@ -127,25 +134,26 @@
             </svg>
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数コーチング</span>
+                <span class="character-sub">小4 算数コーチング (v6.0)</span>
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v5.2</button>
+            <button class="btn-tab" id="btn-new-session">＋ 新しい相談</button>
+            <button class="btn-tab" id="btn-history-list">📖 相談履歴</button>
         </div>
     </header>
 
     <main>
-        <!-- 自分のコメント（発言）を表示する独立フレーム -->
+        <!-- 自分の発言を表示するフレーム -->
         <div id="user-comment-frame">
             <span class="user-comment-label">🗣️ あなた:</span>
-            <span class="user-comment-text" id="user-comment-text">ここにあなたの言葉が出ます</span>
+            <span class="user-comment-text" id="user-comment-text"></span>
         </div>
 
         <div id="board-container">
             <div class="board-header">
-                <span id="board-status">【ステータス：待機中】</span>
-                <span>SPLASH BOARD</span>
+                <span id="board-status">【ステータス：伴走待機中】</span>
+                <span id="session-title-badge">テーマ: 新規相談</span>
             </div>
             <div id="board-content">
                 <div id="preview-container">
@@ -155,15 +163,25 @@
                 <div class="board-text-title" id="board-title">カズ先生からのメッセージ</div>
                 <div class="board-text-body" id="board-speech">
                     こんにちは！解きたい問題を「カメラ」で写すか、<br>
-                    「質問する」ボタンでおしえてね！
+                    「質問する」ボタンでおしえてね！最後まで一緒に伴走するよ。
                 </div>
             </div>
             
-            <div id="camera-modal">
+            <!-- カメラモーダル -->
+            <div id="camera-modal" class="modal-overlay">
                 <video id="camera-video" autoplay playsinline muted></video>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn-action" id="snap-btn" style="background: var(--splat-yellow);">しゃしんをとる</button>
                     <button class="btn-action" id="close-cam-btn" style="background: #A0A5C0;">やめる</button>
+                </div>
+            </div>
+
+            <!-- 履歴一覧モーダル -->
+            <div id="history-modal" class="modal-overlay">
+                <div class="history-box">
+                    <div style="font-weight:900; color:var(--splat-yellow); font-size:16px; margin-bottom:4px;">これまでの相談ルーム</div>
+                    <div id="history-list-container" style="display:flex; flex-direction:column; gap:8px;"></div>
+                    <button class="btn-action" id="close-history-btn" style="background: #A0A5C0; width:100%; justify-content:center; margin-top:8px;">とじる</button>
                 </div>
             </div>
         </div>
@@ -180,7 +198,7 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        console.log("Kazu-sensei Board v5.2 loaded.");
+        console.log("Kazu-sensei Board v6.0 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -193,6 +211,7 @@
         const boardSpeech = document.getElementById('board-speech');
         const boardTitle = document.getElementById('board-title');
         const boardStatus = document.getElementById('board-status');
+        const sessionTitleBadge = document.getElementById('session-title-badge');
         const userCommentFrame = document.getElementById('user-comment-frame');
         const userCommentText = document.getElementById('user-comment-text');
         
@@ -204,9 +223,80 @@
         const previewContainer = document.getElementById('preview-container');
         const previewImg = document.getElementById('preview-img');
 
-        let mediaStream = null;
+        const historyModal = document.getElementById('history-modal');
+        const historyListContainer = document.getElementById('history-list-container');
+        const btnHistoryList = document.getElementById('btn-history-list');
+        const closeHistoryBtn = document.getElementById('close-history-btn');
+        const btnNewSession = document.getElementById('btn-new-session');
 
-        function updateBoard(statusText, titleText, speechText, userText = null) {
+        // セッション・履歴管理
+        let currentSessionId = 'session_' + Date.now();
+        let currentSessionTitle = '新規の相談';
+        let chatHistory = []; // { role: 'user'/'model', parts: [...] }
+
+        function saveCurrentSession() {
+            if (chatHistory.length === 0) return;
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions') || '{}');
+            sessions[currentSessionId] = {
+                title: currentSessionTitle,
+                updatedAt: new Date().toLocaleString(),
+                history: chatHistory,
+                lastSpeech: boardSpeech.innerHTML
+            };
+            localStorage.setItem('kazu_sessions', JSON.stringify(sessions));
+        }
+
+        function loadSessionList() {
+            historyListContainer.innerHTML = '';
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions') || '{}');
+            const keys = Object.keys(sessions);
+            
+            if (keys.length === 0) {
+                historyListContainer.innerHTML = '<div style="font-size:12px; color:#A0A5C0; text-align:center; padding:10px;">まだ保存された相談はありません</div>';
+                return;
+            }
+
+            keys.reverse().forEach(key => {
+                const s = sessions[key];
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `<div><div style="font-weight:bold; font-size:13px; color:#FFF;">${s.title}</div><div style="font-size:10px; color:#A0A5C0;">${s.updatedAt}</div></div><span style="font-size:12px; color:var(--splat-yellow);">つづきへ ➔</span>`;
+                div.onclick = () => {
+                    currentSessionId = key;
+                    currentSessionTitle = s.title;
+                    chatHistory = s.history || [];
+                    sessionTitleBadge.innerText = `テーマ: ${currentSessionTitle}`;
+                    boardSpeech.innerHTML = s.lastSpeech || "前の続きから再開するよ！";
+                    speakText(boardSpeech.innerText);
+                    historyModal.style.display = 'none';
+                    updateBoard("伴走中（履歴から再開）", "カズ先生のホワイトボード解説");
+                };
+                historyListContainer.appendChild(div);
+            });
+        }
+
+        btnNewSession.addEventListener('click', () => {
+            saveCurrentSession();
+            currentSessionId = 'session_' + Date.now();
+            currentSessionTitle = '新規の相談';
+            chatHistory = [];
+            sessionTitleBadge.innerText = `テーマ: 新規の相談`;
+            previewContainer.style.display = 'none';
+            userCommentFrame.style.display = 'none';
+            boardTitle.style.display = 'block';
+            updateBoard("新規ルーム", "カズ先生からのメッセージ", "新しい相談ルームだよ！解きたい問題を教えてね。");
+        });
+
+        btnHistoryList.addEventListener('click', () => {
+            loadSessionList();
+            historyModal.style.display = 'flex';
+        });
+
+        closeHistoryBtn.addEventListener('click', () => {
+            historyModal.style.display = 'none';
+        });
+
+        function updateBoard(statusText, titleText, speechText = null, userText = null) {
             boardStatus.innerText = `【ステータス：${statusText}】`;
             if (titleText) boardTitle.innerText = titleText;
             
@@ -225,22 +315,20 @@
 
         function speakText(text) {
             if (!('speechSynthesis' in window)) return;
-            // 一度音声をリセットして確実に喋らせる
             window.speechSynthesis.cancel();
             
             const cleanText = text.replace(/<[^>]*>?/gm, '');
             const utter = new SpeechSynthesisUtterance(cleanText);
             utter.lang = 'ja-JP';
-            utter.rate = 1.1; // 聞き取りやすいスピード
+            utter.rate = 1.05; 
             utter.pitch = 1.0;
             
-            // ブラウザのブロック対策として遅延を入れて発話させる
             setTimeout(() => {
                 window.speechSynthesis.speak(utter);
             }, 100);
         }
 
-        async function askGemini(promptText, base64Image = null, userDisplayText = null) {
+        async function askGemini(userInputText, base64Image = null, userDisplayText = null) {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
                 updateBoard("エラー", "APIキー未入力", "上の欄に Gemini APIキー を入力してね！", userDisplayText);
@@ -248,38 +336,53 @@
             }
 
             try {
-                updateBoard("思考中...", "カズ先生の板書準備中...", "カズ先生がホワイトボードに書く内容を考えています...", userDisplayText);
+                updateBoard("伴走・思考中...", "カズ先生が考えています...", null, userDisplayText);
                 
                 const ai = new GoogleGenAI({ apiKey: apiKey });
 
-                const systemInstruction = `あなたは小学4年生の算数専用のやさしい指導者「カズ先生」です。
-ホワイトボードに板書するようなイメージで、以下のルールで回答してください：
-1. **答えを直接教えないこと**（計算結果や答えの数値をそのまま書かない）。
-2. 子供が自分で考えられるように、最初のステップや注目すべきポイントのヒントを、**大きな文字でわかりやすく3行程度**でまとめてください。
-3. 語りかけるような優しい先生のトーンで話してください。`;
+                const systemInstruction = `あなたは小学4年生の算数専用の、粘り強く寄り添う熱血でやさしい指導者「カズ先生」です。
+以下のコーチングのルールを**絶対に**守ってください：
+1. **答えや計算結果を直接教えないこと**。
+2. 一問一答で終わらせず、子供が自分の足で答えにたどり着くまで**何段階にも分けて伴走・サポート**する。
+3. 子供の返答（「わからない」「◯◯かな？」など）を受け止め、正解なら次のステップへ、不正解や迷子の場合はどのあたりでつまずいているか推測し、優しく軌道修正や追加のヒント（3行程度）を大きな文字でホワイトボードに板書するように返す。
+4. 会話の文脈を常に維持すること。`;
 
-                let contents = [];
+                // ユーザーの入力パーツを作成
+                let currentParts = [];
                 if (base64Image) {
                     const base64Data = base64Image.split(',')[1];
-                    contents.push({
-                        inlineData: {
-                            mimeType: "image/jpeg",
-                            data: base64Data
-                        }
+                    currentParts.push({
+                        inlineData: { mimeType: "image/jpeg", data: base64Data }
                     });
                 }
-                contents.push(promptText);
+                currentParts.push(userInputText);
 
+                // 履歴に今回のユーザー発言を追加
+                chatHistory.push({ role: 'user', parts: currentParts });
+
+                // セッションタイトルが初期のままであれば最初の入力からタイトルを自動設定
+                if (currentSessionTitle === '新規の相談' && userInputText) {
+                    currentSessionTitle = userInputText.slice(0, 15) + (userInputText.length > 15 ? '...' : '');
+                    sessionTitleBadge.innerText = `テーマ: ${currentSessionTitle}`;
+                }
+
+                // モデルへリクエスト送信（これまでの全履歴をそのまま渡して文脈を完全共有）
                 const response = await ai.models.generateContent({
                     model: 'gemini-3.6-flash',
-                    contents: contents,
+                    contents: chatHistory,
                     config: {
                         systemInstruction: systemInstruction,
                     }
                 });
 
                 if (response && response.text) {
-                    updateBoard("板書表示中", "カズ先生のホワイトボード解説", response.text.replace(/\n/g, '<br>'), userDisplayText);
+                    const replyText = response.text.replace(/\n/g, '<br>');
+                    // モデルの返答を履歴に追加
+                    chatHistory.push({ role: 'model', parts: [{ text: response.text }] });
+                    
+                    // ボードを更新して確実に発話させる
+                    updateBoard("伴走コーチング中", "カズ先生のホワイトボード解説", replyText, userDisplayText);
+                    saveCurrentSession();
                 } else {
                     updateBoard("エラー", "データなし", "ホワイトボードに文字を書けませんでした。", userDisplayText);
                 }
@@ -322,7 +425,7 @@
             boardTitle.style.display = 'block';
             previewContainer.style.display = 'flex';
             
-            askGemini("このノートの問題を見て、答えを言わずに、ホワイトボードに書くように最初のヒントを教えてください。", capturedBase64, "カメラで問題を撮影しました");
+            askGemini("このノートの問題を見て、答えを言わずに、最初のヒントをホワイトボードに分かりやすく教えてください。", capturedBase64, "カメラで問題を撮影して相談しました");
         });
 
         closeCamBtn.addEventListener('click', () => {
@@ -354,7 +457,8 @@
 
                 recognition.onresult = (event) => {
                     const speechResult = event.results[0][0].transcript;
-                    askGemini(`生徒からの質問: ${speechResult} （※答えは教えず、ホワイトボードに書くようにヒントを返してください）`, null, speechResult);
+                    // ここで確実にaskGeminiを呼び出すことで、マイク時も音声が鳴るようにする
+                    askGemini(`生徒からの発言・質問: ${speechResult}`, null, speechResult);
                 };
 
                 recognition.onerror = () => {
@@ -364,7 +468,7 @@
                 recognition.start();
             } else {
                 updateBoard("テキスト入力モード", "質問受付", "音声認識が使えない環境のため、テキストで質問してください。");
-                askGemini("小4の算数について質問があります。答えを言わずにヒントを教えてください。");
+                askGemini("小4の算数について質問があります。答えを言わずにヒントを教えてください。", null, "テキストで質問しました");
             }
         });
 
@@ -372,7 +476,11 @@
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             previewContainer.style.display = 'none';
             boardTitle.style.display = 'block';
-            updateBoard("完了・待機", "カズ先生からのメッセージ", "すごい！よくわかったね！この調子で次の問題もがんばろう！");
+            const cheers = "すごい！よく自分の力で理解できたね！この調子で次のステップも一緒にがんばろう！";
+            updateBoard("完了・達成", "カズ先生からのメッセージ", cheers, "わかった！スッキリ理解できたよ！");
+            chatHistory.push({ role: 'user', parts: [{ text: "わかった！スッキリ理解できたよ！" }] });
+            chatHistory.push({ role: 'model', parts: [{ text: cheers }] });
+            saveCurrentSession();
         });
     </script>
 </body>
