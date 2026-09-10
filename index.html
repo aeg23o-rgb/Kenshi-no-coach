@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズくん (v2.2)</title>
+    <title>AI学習コーチ - カズくん (v2.3)</title>
     <style>
         :root {
             --splat-yellow: #E6FF00;
@@ -105,7 +105,7 @@
             </div>
         </div>
         <div class="header-btns">
-            <button class="btn-report" id="btn-log">v2.2</button>
+            <button class="btn-report" id="btn-log">v2.3</button>
         </div>
     </header>
 
@@ -145,7 +145,7 @@
     <canvas id="capture-canvas" style="display:none;"></canvas>
 
     <script>
-        console.log("Kazu-kun Coach v2.2 loaded.");
+        console.log("Kazu-kun Coach v2.3 loaded.");
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -186,7 +186,7 @@
             window.speechSynthesis.speak(utter);
         }
 
-        // 制限にかかりにくい確実な gemini-pro を v1 エンドポイントで直接叩く
+        // v1beta エンドポイントで現在一般的に利用可能な gemini-1.5-flash を使用する
         async function askGemini(promptText, base64Image = null) {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
@@ -194,7 +194,7 @@
                 return;
             }
 
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
             let parts = [{ text: "あなたは小学4年生の算数専用のやさしいAIコーチ「カズくん」です。子供に寄り添い、答えを直接教えるのではなく、ヒントや考え方をわかりやすく短く（3行程度で）解説してください。\n\n" + promptText }];
             
