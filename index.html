@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - かず先生 (v11.22)</title>
+    <title>AI学習コーチ - かず先生 (v11.23)</title>
     <script type="importmap">
       {
         "imports": {
@@ -225,7 +225,7 @@
             </svg>
             <div class="character-title">
                 <span class="character-name">かず先生のホワイトボード</span>
-                <span class="character-sub">小4 算数個別コーチ (v11.22)</span>
+                <span class="character-sub">小4 算数個別コーチ (v11.23)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -390,13 +390,14 @@
             drawCtx.lineCap = 'round';
             drawCtx.lineJoin = 'round';
         }
+
         window.addEventListener('load', () => { 
             setTimeout(initCanvas, 100);
             initAudioEngine();
-            // 初期メッセージの自然な自動音声発話（最初の画面表示時）
+            // 初回ページロード時の挨拶発話
             setTimeout(() => {
                 speakText(boardSpeech.innerText);
-            }, 500);
+            }, 600);
         });
         window.addEventListener('resize', initCanvas);
 
@@ -417,7 +418,7 @@
         btnClearCanvas.addEventListener('click', () => { drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height); });
         
         btnSendCanvas.addEventListener('click', () => {
-            stopAudio(); // ユーザーの操作により音声を即時ストップ
+            stopAudio();
             const dataUrl = drawCanvas.toDataURL('image/jpeg');
             previewImg.src = dataUrl;
             previewContainer.style.display = 'flex';
@@ -510,8 +511,10 @@
             return formatted;
         }
 
-        // 音声エンジン周り
+        // 音声エンジン・アンロック制御
         let availableVoices = [];
+        let speechQueueId = 0; // 発話の世代管理用ID（混在防止の要）
+
         function initAudioEngine() {
             if (!('speechSynthesis' in window)) return;
             const loadVoices = () => {
@@ -521,23 +524,29 @@
             if (window.speechSynthesis.onvoiceschanged !== undefined) {
                 window.speechSynthesis.onvoiceschanged = loadVoices;
             }
+
+            // ユーザーの最初の操作で確実にオーディオをアンロックする
             const unlockAudio = () => {
-                if (window.speechSynthesis.paused) {
-                    window.speechSynthesis.resume();
+                if ('speechSynthesis' in window) {
+                    if (window.speechSynthesis.paused) {
+                        window.speechSynthesis.resume();
+                    }
+                    const silentUtter = new SpeechSynthesisUtterance("");
+                    silentUtter.volume = 0;
+                    window.speechSynthesis.speak(silentUtter);
                 }
-                const dummy = new SpeechSynthesisUtterance("");
-                window.speechSynthesis.speak(dummy);
-                
                 window.removeEventListener('click', unlockAudio);
                 window.removeEventListener('touchstart', unlockAudio);
                 window.removeEventListener('keydown', unlockAudio);
             };
-            window.addEventListener('click', unlockAudio);
-            window.addEventListener('touchstart', unlockAudio);
-            window.addEventListener('keydown', unlockAudio);
+
+            window.addEventListener('click', unlockAudio, { passive: true });
+            window.addEventListener('touchstart', unlockAudio, { passive: true });
+            window.addEventListener('keydown', unlockAudio, { passive: true });
         }
 
         function stopAudio() {
+            speechQueueId++; // 現在進行中の発話ループを無効化する
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
             }
@@ -546,8 +555,9 @@
         function speakText(text) {
             if (!('speechSynthesis' in window)) return;
             
-            // 新しく喋る前に既存の音声を必ずキャンセルして重ね発話を防ぐ
+            // 古い音声を即座にキャンセルし、新しい世代IDを発行
             window.speechSynthesis.cancel();
+            const currentId = ++speechQueueId;
             
             let cleanText = text.replace(/<[^>]*>?/gm, '').replace(/（[^）]*）/g, '').replace(/\([^)]*\)/g, '');
             cleanText = cleanText.replace(/[\$\#\*\_]/g, '').trim();
@@ -563,7 +573,10 @@
 
             let index = 0;
             function playNextPhrase() {
+                // 途中で他のアクションや停止が行われて世代が変わっていたら即座に中断
+                if (currentId !== speechQueueId) return;
                 if (index >= phrases.length) return;
+                
                 const phrase = phrases[index++].trim();
                 if (!phrase) {
                     playNextPhrase();
@@ -580,10 +593,14 @@
                 }
 
                 utter.onend = () => {
-                    setTimeout(playNextPhrase, 30);
+                    if (currentId === speechQueueId) {
+                        setTimeout(playNextPhrase, 30);
+                    }
                 };
                 utter.onerror = () => {
-                    setTimeout(playNextPhrase, 30);
+                    if (currentId === speechQueueId) {
+                        setTimeout(playNextPhrase, 30);
+                    }
                 };
 
                 window.speechSynthesis.speak(utter);
@@ -632,7 +649,7 @@
                     <div class="tl-content">📝 かず: ${turn.aiPlain.substring(0, 25)}...</div>
                 `;
                 card.onclick = () => { 
-                    stopAudio(); // ログ選択で飛ぶときも音声をリセット
+                    stopAudio();
                     jumpToTurn(origIndex); 
                 };
                 timelineContainer.appendChild(card);
@@ -659,7 +676,7 @@
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
-            const sessions = JSON.parse(localStorage.getItem('kaz_sessions_v11_22') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kaz_sessions_v11_23') || '{}');
             sessions[currentSessionId] = {
                 title: currentSessionTitle,
                 updatedAt: new Date().toLocaleString(),
@@ -667,12 +684,12 @@
                 dialogTurns: dialogTurns,
                 lastSpeech: boardSpeech.innerHTML
             };
-            localStorage.setItem('kaz_sessions_v11_22', JSON.stringify(sessions));
+            localStorage.setItem('kaz_sessions_v11_23', JSON.stringify(sessions));
         }
 
         function loadSessionList() {
             historyListContainer.innerHTML = '';
-            const sessions = JSON.parse(localStorage.getItem('kaz_sessions_v11_22') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kaz_sessions_v11_23') || '{}');
             const keys = Object.keys(sessions);
             
             if (keys.length === 0) {
@@ -709,7 +726,7 @@
         closeHistoryBtn.addEventListener('click', () => { historyModal.style.display = 'none'; });
 
         async function askGemini(userInputText, base64Image = null, overrideTopic = null) {
-            stopAudio(); // 新しい質問やアクションが始まったら前の音声をすぐ止める
+            stopAudio();
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
                 setChildStatus('ready', 'APIキーを入力してね！');
@@ -727,7 +744,7 @@
                 const systemInstruction = `あなたは個別指導塾で小学生（主に小4算数）に教えている、とても優しくて親しみやすい大学生のお兄さん先生「かず先生」です。
 口調は「〜だよ」「〜してみようか」「大丈夫、ゆっくりやろう」「うんうん、よく気づけたね」といった、個別指導の席で隣に座って寄り添ってくれるような、穏やかで優しい丁寧語まじりの語りかけにしてください。怒ったりプレッシャーをかけたりせず、絶対に答えを最初から教えず、簡単なステップに分けてヒントを出してください。
 使える漢字は小4まで。小5以上は読み仮名をつけるかひらがなにする。
-【絶対のルール】：回答の中に「$」記号やLaTeX形式の数式コード（例: \\times や \\div）を絶対に出力しないでください。掛け算は「×」、割り算は「÷」の記号を使ってプレーンテキストで書いてください。
+【絶対のルール】：回答の中に「$」記号やLaTeX形式の数式コード（例: \\times や \\div）を絶対に出力しないでください。掛け算は「×」、割り算は÷の記号を使ってプレーンテキストで書いてください。
 【超重要ルール】：もしユーザーから画像が渡された場合、画像内の数式や問題を自分で読み取り、返答の最初の行に「テーマ：〇〇の計算」などのようにタイトルを明記してください。
 返答の最後に図解の種類として【図解:bars】、【図解:blocks】、【図解:decimals】、または【図解:none】を必ず指定すること。`;
 
@@ -880,7 +897,7 @@
             recognition.maxAlternatives = 1;
 
             recognition.onstart = () => {
-                stopAudio(); // マイクが起動したときも先生のおしゃべりをピタッと止める
+                stopAudio();
                 setChildStatus('listening', '【聞いてるよ、話してね…】');
                 btnMic.style.background = '#FF0055';
                 btnMic.style.color = '#FFF';
@@ -917,7 +934,7 @@
         });
 
         btnEasier.addEventListener('click', () => {
-            stopAudio(); // 途中でもボタンを押したら音声をストップしてすぐ分かりやすくし直す
+            stopAudio();
             askGemini("さっきの説明を、もう少しゆっくり、別の簡単な例えを使って優しく教えて。", null, currentSessionTitle);
         });
 
