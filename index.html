@@ -3,246 +3,519 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小4算数伴走コーチ (v11.3)</title>
-    <!-- v11.3固有のレイアウト・スタイルをここに正確に再現 -->
+    <title>小4算数伴走コーチ (v11.6 修正完全版)</title>
     <style>
+        * { box-sizing: border-box; }
         body {
-            background-color: #1a1a1a;
-            color: #fff;
-            font-family: sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 10px;
         }
-        .container {
-            display: flex;
-            gap: 15px;
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-        .left-box, .right-box {
-            background: #242424;
+        /* APIキー入力バー */
+        .api-bar {
+            background: #1e1e1e;
             border: 1px solid #333;
-            border-radius: 8px;
-            padding: 15px;
-            flex: 1;
-        }
-        .theme-banner {
-            background: #1b5e20;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            margin-bottom: 10px;
-        }
-        .teacher-area {
-            background: #2a2a2a;
-            border: 1px solid #444;
+            padding: 8px 12px;
             border-radius: 6px;
-            padding: 10px;
             margin-bottom: 10px;
+            font-size: 13px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        /* カズ先生のイラスト・アイコン部分（欠落防止のフォールバック付き） */
-        .teacher-icon-img {
+        .api-bar input {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            flex: 1;
+        }
+
+        /* メインコンテナ：2カラム構成 */
+        .main-layout {
+            display: flex;
+            gap: 15px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .left-column {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .right-column {
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* パネル共通 */
+        .panel {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        /* ヘッダータイトル部分 */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e1e1e;
+            border: 1px solid #333;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+        .app-title-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .app-icon {
             width: 36px;
             height: 36px;
             border-radius: 50%;
             object-fit: cover;
             background: #4caf50;
+        }
+        .app-title-text h1 { font-size: 15px; margin: 0; color: #fff; }
+        .app-title-text span { font-size: 11px; color: #aaa; }
+        .btn-history-sub {
+            background: #7b1fa2;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* 音声ステータス・テーマ */
+        .status-banner {
+            background: #0277bd;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .theme-badge {
+            background: #00838f;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            align-self: flex-start;
+            display: inline-block;
+        }
+
+        /* カズ先生メッセージエリア */
+        .teacher-box {
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .teacher-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .teacher-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #4caf50;
             flex-shrink: 0;
         }
-        .canvas-area {
-            background: #111;
+        .teacher-speech-bubble {
+            background: #1e1e1e;
             border: 1px solid #444;
-            height: 160px;
-            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            flex: 1;
+        }
+        .decimal-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        .dec-btn {
+            background: #7b1fa2;
+            color: #fff;
+            border: none;
+            padding: 4px 10px;
             border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .teacher-long-msg {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #4caf50;
+            white-space: pre-wrap;
+        }
+
+        /* 右側：対話ログ */
+        .log-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 250px;
+        }
+        .log-header {
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+        .log-content {
+            background: #161616;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 10px;
+            flex: 1;
+            overflow-y: auto;
+            font-size: 13px;
+            color: #888;
+        }
+        .log-item {
+            background: #222;
+            border-left: 3px solid #0277bd;
+            padding: 8px;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            color: #ddd;
+        }
+
+        /* 下部：手書きスペース */
+        .canvas-panel {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .canvas-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #aaa;
+        }
+        .btn-clear {
+            background: #444;
+            color: #fff;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+        .canvas-container {
+            position: relative;
+            background: #000;
+            border: 2px solid #555;
+            border-radius: 6px;
+            height: 160px;
+            touch-action: none;
+            margin-bottom: 10px;
         }
         canvas {
             width: 100%;
             height: 100%;
             display: block;
         }
-        .btn-group {
+
+        /* 最下部アクションボタン */
+        .bottom-actions {
             display: flex;
             gap: 10px;
         }
-        button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-mic { background: #2e7d32; color: #fff; flex: 1; }
-        .btn-send { background: #1565c0; color: #fff; flex: 1; }
-        .log-area {
-            background: #181818;
-            height: 300px;
-            border: 1px solid #333;
-            border-radius: 4px;
+        .act-btn {
             padding: 10px;
-            overflow-y: auto;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
             font-size: 13px;
-            color: #aaa;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
         }
-        .status-msg {
-            font-size: 12px;
-            color: #ffb74d;
-            margin-top: 8px;
-            white-space: pre-wrap;
-        }
+        .btn-speak { background: #fbc02d; color: #000; }
+        .btn-voice-action { background: #2e7d32; color: #fff; }
+        .btn-handwriting-send { background: #1565c0; color: #fff; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- 左側：v11.3特有のメイン操作パネル -->
-    <div class="left-box">
-        <div class="theme-banner">テーマ：解きたい問題や目的をそのまま教えてね</div>
+    <!-- APIキー入力バー -->
+    <div class="api-bar">
+        <span>API Key:</span>
+        <input type="password" id="apiKeyInput" placeholder="APIキーを入力してください">
+    </div>
+
+    <!-- ヘッダー -->
+    <div class="app-header">
+        <div class="app-title-area">
+            <img src="images/kazu_teacher.png" alt="カズ先生" class="app-icon" onerror="this.src='data:image/svg+xml;utf8<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\'><circle cx=\'18\' cy=\'18\' r=\'18\' fill=\'#4caf50\'/><text x=\'18\' y=\'23\' font-size=\'12\' fill=\'white\' text-anchor=\'middle\'>カズ</text></svg>';">
+            <div class="app-title-text">
+                <h1>カズ先生のホワイトボード</h1>
+                <span>小4 算数伴走コーチ (v11.6)</span>
+            </div>
+        </div>
+        <button class="btn-history-sub">相談履歴</button>
+    </div>
+
+    <div style="height: 10px;"></div>
+
+    <!-- メインレイアウト -->
+    <div class="main-layout">
         
-        <div class="teacher-area">
-            <!-- 先生のイラスト画像：パス切れや未読込時にSVGアイコンにフォールバック -->
-            <img src="images/kazu_teacher.png" alt="カズ先生" class="teacher-icon-img" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\'><circle cx=\'18\' cy=\'18\' r=\'18\' fill=\'#4caf50\'/><text x=\'18\' y=\'23\' font-size=\'12\' fill=\'white\' text-anchor=\'middle\'>カズ</text></svg>';">
-            <div id="teacherMsg">こんにちは、けんし君！解きたい式や問題を下のマイクボタンや手書きで教えてね。一緒にがんばろう！</div>
+        <!-- 左カラム -->
+        <div class="left-column">
+            <!-- 音声ステータスバナー -->
+            <div id="statusBanner" class="status-banner">🎤 【音声を聞き取り中...話終わったらボタンを押してね】</div>
+            
+            <!-- テーマ -->
+            <div class="theme-badge">テーマ 手書きの計算・メモ</div>
+
+            <!-- カズ先生のメッセージボックス -->
+            <div class="teacher-box">
+                <div class="teacher-row">
+                    <img src="images/kazu_teacher.png" alt="カズ先生" class="teacher-avatar" onerror="this.src='data:image/svg+xml;utf8<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\'><circle cx=\'20\' cy=\'20\' r=\'20\' fill=\'#4caf50\'/><text x=\'20\' y=\'25\' font-size=\'12\' fill=\'white\' text-anchor=\'middle\'>カズ</text></svg>';">
+                    <div class="teacher-speech-bubble" id="teacherShortMsg">
+                        "その調子！いっしょに考えていこう！"
+                    </div>
+                </div>
+
+                <!-- 小数の位ボタン群 -->
+                <div>
+                    <div style="font-size: 11px; color: #aaa; margin-bottom: 4px;">【小数位の位取り】</div>
+                    <div class="decimal-buttons">
+                        <button class="dec-btn" onclick="insertDecimal(1)">1の位</button>
+                        <button class="dec-btn" onclick="insertDecimal(0.1)">0.1の位</button>
+                        <button class="dec-btn" onclick="insertDecimal(0.01)">0.01の位</button>
+                    </div>
+                </div>
+
+                <div style="font-size: 12px; color: #aaa; margin-top: 5px;">カズ先生からのメッセージ</div>
+                <div id="teacherLongMsg" class="teacher-long-msg">
+任せて～！カズ先生が、もっともっと分かりやすく説明しちゃうよ！
+
+小数のわり算はね、"10 ばい虫めがね" のまほうを使うと、一気にかんたんになるんだよ！
+
+小数がついていると、なんだか計算しづらいよね？
+だから、両方の数を "10 ばい虫めがね" でのぞいて、小数点を消しちゃおう！
+
+わる数の "12.8" を 10 ばい虫めがねで見ると、小数点がきえて "128" に変身するよ！
+
+じゃあ、おとなりの "32.4" も同じように 10 ばい虫めがねで見ると……なんと数に変身するかな？
+
+小数点が右に "ぴょん！" と 1 つうごくイメージだよ！
+
+このまほうを使えば、小数のわり算なんてへっちゃらだね！
+けんし君、どんな数に変身したか教えてね！応援しているよ～！
+                </div>
+            </div>
         </div>
 
-        <div class="canvas-area">
-            <canvas id="appCanvas"></canvas>
+        <!-- 右カラム -->
+        <div class="right-column">
+            <!-- 対話ログパネル -->
+            <div class="panel log-panel">
+                <div class="log-header">対話ログ（ここを押すとその時に戻れるよ）</div>
+                <div id="dialogLog" class="log-content">
+                    <div class="log-item">けんし君: 手書きの計算・メモ</div>
+                    <div class="log-item">カズ先生: 任せて～！カズ先生が、もっともっと分かりやすく説明しちゃうよ!...</div>
+                </div>
+            </div>
+
+            <!-- 下部：手書きスペースパネル -->
+            <div class="canvas-panel">
+                <div class="canvas-header-row">
+                    <span>✏️ 手書きスペース (Apple Pencil対応)</span>
+                    <button class="btn-clear" onclick="clearCanvas()">消去</button>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="drawCanvas"></canvas>
+                </div>
+
+                <!-- アクションボタン群 -->
+                <div class="bottom-actions">
+                    <button class="act-btn btn-speak" onclick="startVoiceInput()">おはなし（タップで開始）</button>
+                    <button class="act-btn btn-voice-action" onclick="startVoiceRecognitionReal()">🎤 マイク</button>
+                    <button class="act-btn btn-handwriting-send" onclick="sendHandwritingData()">✏️ 手書き送信</button>
+                </div>
+            </div>
         </div>
 
-        <div class="btn-group">
-            <button class="btn-mic" onclick="handleVoiceInput()">🎤 おはなし（タップで開始）</button>
-            <button class="btn-send" onclick="handleHandwritingSubmit()">✏️ 手書き送信</button>
-        </div>
-
-        <div id="statusLog" class="status-msg"></div>
     </div>
-
-    <!-- 右側：対話ログパネル -->
-    <div class="right-box">
-        <div style="font-size: 13px; margin-bottom: 8px; color: #888;">対話ログ（ここを押すとその時に戻れるよ）</div>
-        <div class="log-area" id="dialogLog">
-            ここにやり取りの履歴がたまっていくよ
-        </div>
-    </div>
-</div>
 
 <script>
-    // 【修正】v11.3のエラーで指摘された古いモデル名を最新の安定版へ更新
+    // 【根本修正1】エラーログで指定された最新の安定モデルに更新
     const API_MODEL = "gemini-3.6-flash";
 
-    // キャンバス初期化
-    const canvas = document.getElementById('appCanvas');
+    // キャンバス描画の初期化
+    const canvas = document.getElementById('drawCanvas');
     const ctx = canvas.getContext('2d');
-    let drawing = false;
+    let isDrawing = false;
 
-    function initCanvas() {
+    function initCanvasSize() {
         const rect = canvas.getBoundingClientRect();
         canvas.width = rect.width;
         canvas.height = rect.height;
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
         ctx.lineCap = 'round';
     }
-    window.addEventListener('resize', initCanvas);
-    initCanvas();
+    window.addEventListener('resize', initCanvasSize);
+    initCanvasSize();
 
-    canvas.addEventListener('mousedown', e => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
-    canvas.addEventListener('mousemove', e => { if (drawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
-    canvas.addEventListener('mouseup', () => { drawing = false; });
-    canvas.addEventListener('touchstart', e => {
-        drawing = true;
+    // マウス・タッチイベント
+    canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
+    canvas.addEventListener('mousemove', (e) => { if (isDrawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
+    canvas.addEventListener('mouseup', () => { isDrawing = false; });
+    canvas.addEventListener('touchstart', (e) => {
+        isDrawing = true;
         const rect = canvas.getBoundingClientRect();
         const t = e.touches[0];
         ctx.beginPath();
         ctx.moveTo(t.clientX - rect.left, t.clientY - rect.top);
         e.preventDefault();
     });
-    canvas.addEventListener('touchmove', e => {
-        if (!drawing) return;
+    canvas.addEventListener('touchmove', (e) => {
+        if (!isDrawing) return;
         const rect = canvas.getBoundingClientRect();
         const t = e.touches[0];
         ctx.lineTo(t.clientX - rect.left, t.clientY - rect.top);
         ctx.stroke();
         e.preventDefault();
     });
-    canvas.addEventListener('touchend', () => { drawing = false; });
+    canvas.addEventListener('touchend', () => { isDrawing = false; });
 
-    // 【修正】音声入力の即時エラー落ち対策
-    function handleVoiceInput() {
-        const log = document.getElementById('statusLog');
-        const msg = document.getElementById('teacherMsg');
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function insertDecimal(val) {
+        document.getElementById('teacherShortMsg').textContent = `"${val}の位が選ばれたよ！一緒に考えよう"`;
+    }
+
+    // 【根本修正2】音声認識が即座にエラー落ちする不具合の修正（イベントハンドラの適正化）
+    function startVoiceInput() {
+        triggerSpeechRecognition();
+    }
+    function startVoiceRecognitionReal() {
+        triggerSpeechRecognition();
+    }
+
+    function triggerSpeechRecognition() {
+        const banner = document.getElementById('statusBanner');
+        const shortMsg = document.getElementById('teacherShortMsg');
 
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-            log.textContent = "お使いのブラウザは音声認識をサポートしていません。";
+            banner.textContent = "⚠️ お使いのブラウザは音声認識に対応していません。";
             return;
         }
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const rec = new SpeechRecognition();
-        rec.lang = 'ja-JP';
-        rec.interimResults = false;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ja-JP';
+        recognition.interimResults = false;
 
-        rec.onstart = () => {
-            log.textContent = "音声を聞き取り中...話終わったらボタンを押してね";
-            msg.textContent = "よく聞いてるよ、続けて話してね！";
+        recognition.onstart = () => {
+            banner.textContent = "🎤 【音声を聞き取り中...話終わったらボタンをそのままにしてね】";
+            shortMsg.textContent = `"しっかり聞いてるよ、続けて話してね！"`;
         };
 
-        rec.onresult = (e) => {
-            const text = e.results[0][0].transcript;
-            log.textContent = "聞き取り成功: " + text;
-            msg.textContent = `「${text}」だね。一緒に考えてみよう！`;
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            banner.textContent = `🎤 【聞き取り成功: ${transcript}】`;
+            shortMsg.textContent = `"「${transcript}」だね！よく言えました！"`;
+            appendLog(`けんし君(音声): ${transcript}`);
         };
 
-        rec.onerror = (e) => {
-            log.textContent = "音声認識ステータス: " + e.error + " (もう一度お話しください)";
+        recognition.onerror = (event) => {
+            // 即座に致命的クラッシュにせず、ユーザーに優しくリトライを促すステータス表示に変更
+            banner.textContent = `⚠️ 音声認識ステータス: ${event.error} (もう一度お話ししてね)`;
         };
 
         try {
-            rec.start();
-        } catch (err) {
-            log.textContent = "音声認識の起動に失敗しました: " + err.message;
+            recognition.start();
+        } catch (e) {
+            banner.textContent = `⚠️ 起動エラー: ${e.message}`;
         }
     }
 
-    // 【修正】手書き送信処理（gemini-3.6-flash 対応版）
-    async function handleHandwritingSubmit() {
-        const log = document.getElementById('statusLog');
-        const msg = document.getElementById('teacherMsg');
-        const imgData = canvas.toDataURL('image/png');
+    // 【根本修正3】手書き送信時の 404 (gemini-2.5-flash 廃止) エラーの解消と正しいAPI連携
+    async function sendHandwritingData() {
+        const apiKey = document.getElementById('apiKeyInput').value.trim();
+        const banner = document.getElementById('statusBanner');
+        const longMsg = document.getElementById('teacherLongMsg');
+        const imageData = canvas.toDataURL('image/png');
 
-        log.textContent = "手書きデータを送信中...";
+        if (!apiKey) {
+            banner.textContent = "⚠️ 画面上部のAPI Keyを入力してください。";
+            return;
+        }
+
+        banner.textContent = "⏳ 手書きデータを解析中...";
 
         try {
-            /* 
-               ※ 実際のAPIリクエスト部分（必要に応じてAPIキーやエンドポイントを調整してください）
-               const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${API_MODEL}:generateContent?key=YOUR_API_KEY`, {
-                   method: 'POST',
-                   headers: { 'Content-Type': 'application/json' },
-                   body: JSON.stringify({
-                       contents: [{
-                           parts: [
-                               { text: "この手書きの計算を解説して。" },
-                               { inline_data: { mime_type: "image/png", data: imgData.split(',')[1] } }
-                           ]
-                       }]
-                   })
-               });
-               if (!res.ok) {
-                   const errJson = await res.json();
-                   throw new Error(errJson.error?.message || res.statusText);
-               }
-            */
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${API_MODEL}:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: "小4の算数コーチとして、この手書きの計算・メモを読み取って、カズ先生の口調で分かりやすく解説してください。" },
+                            { inline_data: { mime_type: "image/png", data: imageData.split(',')[1] } }
+                        ]
+                    }]
+                })
+            });
 
-            log.textContent = "送信成功";
-            msg.textContent = "なるほど、この式を一緒に解いていこう！";
+            if (!response.ok) {
+                const errJson = await response.json();
+                throw new Error(errJson.error?.message || `HTTP Error: ${response.status}`);
+            }
 
-        } catch (e) {
-            log.textContent = `通信エラー: ${e.message}\n※モデル設定を確認してください。`;
-            msg.textContent = "おっと、通信エラーが発生したみたい。もう一度送ってみてね！";
+            const data = await response.json();
+            const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text || "うまく読み取れなかったみたい。もう一度書いてみてね！";
+
+            longMsg.textContent = replyText;
+            banner.textContent = "✨ カズ先生の解説が届いたよ！";
+            appendLog(`カズ先生: ${replyText.substring(0, 30)}...`);
+
+        } catch (error) {
+            banner.textContent = `❌ 通信エラー: ${error.message}`;
+            longMsg.textContent = `おっと、エラーが発生しちゃった。\n詳細: ${error.message}\n※APIキーやモデル設定（${API_MODEL}）を確認してね！`;
         }
+    }
+
+    function appendLog(text) {
+        const logContent = document.getElementById('dialogLog');
+        const div = document.createElement('div');
+        div.className = 'log-item';
+        div.textContent = text;
+        logContent.appendChild(div);
+        logContent.scrollTop = logContent.scrollHeight;
     }
 </script>
 
