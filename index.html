@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v11.17)</title>
+    <title>AI学習コーチ - カズ先生 (v11.18)</title>
     <script type="importmap">
       {
         "imports": {
@@ -44,7 +44,6 @@
         }
         #avatar-box { display: flex; align-items: center; gap: 8px; }
         
-        /* スプラトゥーン風アバター（ネオンの二重リング＆ポップなハイライト） */
         .character-avatar-img {
             width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--splat-cyan);
             object-fit: cover; object-position: center; flex-shrink: 0; background: linear-gradient(135deg, var(--splat-purple), var(--splat-pink));
@@ -221,22 +220,18 @@
 
     <header>
         <div id="avatar-box">
-            <!-- スプラトゥーン風に描画・カスタマイズされたSVGアイコン（インライン埋め込みで確実・綺麗に表示） -->
             <svg class="character-avatar-img" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="48" fill="#7B00FF" stroke="#CCFF00" stroke-width="4"/>
-                <!-- 髪 (ネオンシアン) -->
                 <path d="M20 60 C 20 30, 80 30, 80 60 C 80 75, 70 85, 50 85 C 30 85, 20 75, 20 60 Z" fill="#00F0FF"/>
-                <!-- ゴーグル（ストリート風） -->
                 <rect x="22" y="38" width="25" height="18" rx="8" fill="#111" stroke="#CCFF00" stroke-width="3"/>
                 <rect x="53" y="38" width="25" height="18" rx="8" fill="#111" stroke="#CCFF00" stroke-width="3"/>
                 <circle cx="34" cy="47" r="5" fill="#FF0055"/>
                 <circle cx="65" cy="47" r="5" fill="#FF0055"/>
-                <!-- 笑顔の口 -->
                 <path d="M 40 68 Q 50 78 60 68" stroke="#CCFF00" stroke-width="4" fill="none" stroke-linecap="round"/>
             </svg>
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数伴走コーチ (v11.17)</span>
+                <span class="character-sub">小4 算数伴走コーチ (v11.18)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -283,7 +278,7 @@
                     
                     <div class="board-text-title" id="board-title"><span>📝</span> カズ先生からのメッセージ</div>
                     <div class="board-text-body" id="board-speech">
-                        こんにちは、けんし君！下の<b>「🎙️ おはなし」</b>で話しかけるか、手書き、カメラで送ってね！
+                        こんにちは！下の<b>「🎙️ おはなし」</b>で話しかけるか、手書き、カメラで送ってね！
                     </div>
                 </div>
             </div>
@@ -337,7 +332,7 @@
 
     <div id="solved-modal" class="modal-overlay">
         <div class="modal-box" style="align-items: center;">
-            <div style="font-weight:900; color:var(--splat-yellow); font-size:17px;">よくがんばったね、けんし君！🎉</div>
+            <div style="font-weight:900; color:var(--splat-yellow); font-size:17px;">よくがんばったね！🎉</div>
             <div style="font-size:13px; color:#FFF; line-height:1.4; font-weight:bold;">この問題について、まだ追加で聞いておきたいことはあるかな？</div>
             <button class="btn-input-tool" id="btn-add-question" style="background: var(--splat-cyan); color:#0B0E14; width:100%; font-size:13px; justify-content:center;">✏️ まだ続ける / 質問する</button>
             <button class="btn-input-tool" id="btn-end-session" style="background: var(--splat-pink); color:#FFF; width:100%; font-size:13px; justify-content:center;">🏁 相談を終了してきろくする</button>
@@ -402,7 +397,10 @@
             drawCtx.lineCap = 'round';
             drawCtx.lineJoin = 'round';
         }
-        window.addEventListener('load', () => { setTimeout(initCanvas, 100); });
+        window.addEventListener('load', () => { 
+            setTimeout(initCanvas, 100);
+            initAudioEngine(); // 音声エンジンの事前ロード
+        });
         window.addEventListener('resize', initCanvas);
 
         function getPos(e) {
@@ -515,19 +513,73 @@
             return formatted;
         }
 
-        // 音声合成による発話出力機能（確実に先生が喋るよう修正）
+        // 確実な音声出力システム（ブラウザ制限・ボイス非同期読み込み対応）
+        let availableVoices = [];
+        function initAudioEngine() {
+            if (!('speechSynthesis' in window)) return;
+            const loadVoices = () => {
+                availableVoices = window.speechSynthesis.getVoices();
+            };
+            loadVoices();
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = loadVoices;
+            }
+            // ユーザーの初回クリックやタップでブラウザの音声ブロックを強制解除するアンロック処理
+            const unlockAudio = () => {
+                if (window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume();
+                }
+                window.removeEventListener('click', unlockAudio);
+                window.removeEventListener('touchstart', unlockAudio);
+            };
+            window.addEventListener('click', unlockAudio);
+            window.addEventListener('touchstart', unlockAudio);
+        }
+
         function speakText(text) {
             if (!('speechSynthesis' in window)) return;
+            
+            // 現在の音声を一度すべてキャンセルしてリセット
             window.speechSynthesis.cancel();
             
             let cleanText = text.replace(/<[^>]*>?/gm, '').replace(/（[^）]*）/g, '').replace(/\([^)]*\)/g, '');
-            cleanText = cleanText.replace(/[\$\#\*\_]/g, '');
-            
+            cleanText = cleanText.replace(/[\$\#\*\_]/g, '').trim();
+            if (!cleanText) return;
+
             const utter = new SpeechSynthesisUtterance(cleanText);
             utter.lang = 'ja-JP';
-            utter.rate = 1.05; // 少しテンポよく
-            utter.pitch = 1.1; // 明るい先生のトーン
-            window.speechSynthesis.speak(utter);
+            utter.rate = 1.05; 
+            utter.pitch = 1.1; 
+
+            // 日本語のボイスが取得できていれば設定する
+            if (availableVoices.length === 0) {
+                availableVoices = window.speechSynthesis.getVoices();
+            }
+            const jaVoice = availableVoices.find(v => v.lang === 'ja-JP' || v.lang === 'ja_JP');
+            if (jaVoice) {
+                utter.voice = jaVoice;
+            }
+
+            // iOS/Chrome等で音声が途中で止まってしまうのを防ぐためのハック（一定間隔でresumeを呼ぶ）
+            const speechTimer = setInterval(() => {
+                if (window.speechSynthesis.speaking) {
+                    window.speechSynthesis.pause();
+                    window.speechSynthesis.resume();
+                } else {
+                    clearInterval(speechTimer);
+                }
+            }, 5000);
+
+            utter.onend = () => { clearInterval(speechTimer); };
+            utter.onerror = (e) => { 
+                console.warn("Speech synthesis error event:", e);
+                clearInterval(speechTimer); 
+            };
+
+            // ブラウザの保護機能対策としてわずかに遅延させてから発話実行
+            setTimeout(() => {
+                window.speechSynthesis.speak(utter);
+            }, 100);
         }
 
         function typeWriterEffect(cleanHtml, callback) {
@@ -565,7 +617,7 @@
                 if (origIndex === dialogTurns.length - 1) card.classList.add('active');
                 
                 card.innerHTML = `
-                    <div class="tl-user">🗣️ けんし君: ${turn.userText}</div>
+                    <div class="tl-user">🗣️ ユーザー: ${turn.userText}</div>
                     <div class="tl-content">📝 カズ先生: ${turn.aiPlain.substring(0, 25)}...</div>
                 `;
                 card.onclick = () => { jumpToTurn(origIndex); };
@@ -592,7 +644,7 @@
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_17') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_18') || '{}');
             sessions[currentSessionId] = {
                 title: currentSessionTitle,
                 updatedAt: new Date().toLocaleString(),
@@ -600,12 +652,12 @@
                 dialogTurns: dialogTurns,
                 lastSpeech: boardSpeech.innerHTML
             };
-            localStorage.setItem('kazu_sessions_v11_17', JSON.stringify(sessions));
+            localStorage.setItem('kazu_sessions_v11_18', JSON.stringify(sessions));
         }
 
         function loadSessionList() {
             historyListContainer.innerHTML = '';
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_17') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_18') || '{}');
             const keys = Object.keys(sessions);
             
             if (keys.length === 0) {
@@ -628,7 +680,7 @@
                     speakText(boardSpeech.innerText);
                     historyModal.style.display = 'none';
                     renderTimeline();
-                    setTeacherMood('おかえり、けんし君！つづきをがんばろう！');
+                    setTeacherMood('おかえり！つづきをがんばろう！');
                     setChildStatus('ready');
                     btnEasier.disabled = false;
                     btnSolved.disabled = false;
@@ -655,10 +707,10 @@
             try {
                 const ai = new GoogleGenAI({ apiKey: apiKey });
                 const systemInstruction = `あなたは小学4年生の算数専用の、とても明るくポジティブで熱血なスプラトゥーン風の先生「カズ先生」です。
-生徒の名前「けんし君」は、褒めるときやここぞという応援のタイミングのみに控えめに使用してください。
+生徒の名前は呼びかけにのみ控えめに使用してください。
 常にポジティブ、明るく元気、前向きなトーンを維持してください。決して計算結果を直接教えず、段階的なヒントを出してください。
 使える漢字は小4まで。小5以上は読み仮名をつけるかひらがなにする。
-【絶対のルール】：回答の中に「$」記号やLaTeX形式の数式コード（例: \\times や \\div）を絶対に出力しないでください。掛け算は「×」、割り算は「÷」の記号を使ってプレーンテキストで書いてください。
+【絶対のルール】：回答の中に「$」記号やLaTeX形式の数式コード（例: \\times や \\div）を絶対に出力しないでください。掛け算は「×」、割り算は÷の記号を使ってプレーンテキストで書いてください。
 【超重要ルール】：もしユーザーから画像（手書きメモやカメラ画像）が渡された場合、画像内に書かれている数式や問題（例: 32.4 ÷ 12 など）をモデル自身で読み取り、返答の最初に「テーマ：〇〇の計算」またはその数式を明記してください。
 返答の最後に図解の種類として【図解:bars】、【図解:blocks】、【図解:decimals】、または【図解:none】を必ず指定すること。`;
 
@@ -733,9 +785,11 @@
                     setTeacherMood('その調子！いっしょに考えていこう！');
                     
                     typeWriterEffect(formattedHtml, () => {
-                        speakText(plainReply); // タイピング完了と同時に音声読み上げを実行
                         setChildStatus('ready');
                     });
+                    
+                    // タイピング開始とほぼ同時に音声読み上げを実行
+                    speakText(plainReply);
 
                     saveCurrentSession();
                     btnEasier.disabled = false;
@@ -858,7 +912,7 @@
             previewContainer.style.display = 'none';
             visualContainer.style.display = 'none';
             
-            const cheers = "すばらしいね、けんし君！今回の相談はここまで！きろくに保存したよ。次の問題もこの調子でがんばろう！";
+            const cheers = "すばらしいね！今回の相談はここまで！きろくに保存したよ。次の問題もこの調子でがんばろう！";
             boardSpeech.innerHTML = cheers;
             speakText(cheers);
             setChildStatus('ready', 'お疲れ様！新しい問題へどうぞ！');
