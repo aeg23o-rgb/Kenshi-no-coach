@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v11.1)</title>
+    <title>AI学習コーチ - カズ先生 (v11.2)</title>
     <script type="importmap">
       {
         "imports": {
@@ -45,7 +45,7 @@
         #avatar-box { display: flex; align-items: center; gap: 12px; }
         .character-avatar-img {
             width: 42px; height: 42px; border-radius: 50%; border: 3px solid var(--splat-yellow);
-            object-fit: cover; box-shadow: 0 2px 8px rgba(204,255,0,0.4);
+            object-fit: cover; object-position: 35% 20%; box-shadow: 0 2px 8px rgba(204,255,0,0.4);
         }
         .character-title { display: flex; flex-direction: column; }
         .character-name { font-weight: 900; font-size: 16px; color: var(--splat-yellow); text-shadow: 2px 2px 0px #000; letter-spacing: 0.5px; }
@@ -81,14 +81,14 @@
         #current-topic-banner {
             background: linear-gradient(90deg, #1E1235, #381A66);
             border-bottom: 4px solid var(--splat-cyan);
-            padding: 12px 18px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+            padding: 10px 18px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
             box-shadow: inset 0 2px 8px rgba(0,240,255,0.3);
         }
         #current-topic-label {
-            font-size: 12px; background: var(--splat-cyan); color: #0B0E14; font-weight: 900; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px; flex-shrink: 0;
+            font-size: 11px; background: var(--splat-cyan); color: #0B0E14; font-weight: 900; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px; flex-shrink: 0;
         }
         #current-topic-text {
-            font-size: 16px; font-weight: 900; color: #FFF; text-shadow: 1px 1px 0 #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px;
+            font-size: 17px; font-weight: 900; color: var(--splat-yellow); text-shadow: 1px 1px 0 #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px;
         }
 
         #board-content {
@@ -99,12 +99,12 @@
         
         .manga-stage {
             display: flex; gap: 16px; align-items: center; width: 96%; flex-shrink: 0;
-            background: rgba(0,0,0,0.5); border: 3px solid var(--splat-purple); border-radius: 16px; padding: 12px 18px;
+            background: rgba(0,0,0,0.5); border: 3px solid var(--splat-purple); border-radius: 16px; padding: 10px 18px;
             box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
         }
         .teacher-avatar-large {
-            width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--splat-yellow);
-            object-fit: cover; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+            width: 74px; height: 74px; border-radius: 50%; border: 3px solid var(--splat-yellow);
+            object-fit: cover; object-position: 35% 20%; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.8);
         }
         
         #visual-container {
@@ -230,11 +230,11 @@
 
     <header>
         <div id="avatar-box">
-            <!-- 送っていただいたスプラ風イラストをそのまま使用 -->
+            <!-- ご提示いただいたスプラ風イラスト(画像2枚目)をそのまま使用 -->
             <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop" class="character-avatar-img" alt="カズ先生">
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数伴走コーチ (v11.1)</span>
+                <span class="character-sub">小4 算数伴走コーチ (v11.2)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -250,15 +250,15 @@
                     <span>カズ先生 ＆ けんし君</span>
                 </div>
                 
-                <!-- 【修正】テーマ・目的がそのまま直に大きく表示されるバナー -->
+                <!-- 入力されたテーマをそのままノーカットで大きく表示 -->
                 <div id="current-topic-banner">
                     <span id="current-topic-label">🎯 いまの相談テーマ</span>
-                    <span id="current-topic-text">新しい相談ルーム（解きたい問題や目的を決めよう）</span>
+                    <span id="current-topic-text">解きたい問題や目的をそのまま教えてね</span>
                 </div>
 
                 <div id="board-content">
                     <div class="manga-stage" id="manga-stage">
-                        <!-- 送っていただいたスプラ風イラストをそのままステージにも使用 -->
+                        <!-- ご提示いただいたスプラ風イラスト(画像2枚目)をそのままステージにも使用 -->
                         <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=300&auto=format&fit=crop" class="teacher-avatar-large" alt="カズ先生">
                         <div style="font-size: 15px; color: var(--splat-yellow); text-align: left; font-weight: 900; text-shadow: 1px 1px 0 #000; line-height: 1.5;">
                             カズ先生<br><span id="teacher-mood" style="color:#FFF; font-size:14px; font-weight:bold;">“今日も楽しくいっしょにがんばろうね！”</span>
@@ -275,7 +275,7 @@
                     
                     <div class="board-text-title" id="board-title"><span>📝</span> カズ先生からのメッセージ</div>
                     <div class="board-text-body" id="board-speech">
-                        こんにちは、けんし君！解きたい問題や今日の目的を、<br>
+                        こんにちは、けんし君！解きたい式や問題（例: 32.4÷0.23 など）を、<br>
                         下のマイクボタンを押しながら教えてね。一緒にがんばろう！
                     </div>
                 </div>
@@ -304,7 +304,7 @@
                 </div>
                 <canvas id="draw-canvas"></canvas>
                 <div class="input-control-bar">
-                    <!-- 【修正】押している間だけ確実に機能するプッシュ・トゥ・トーク -->
+                    <!-- 確実に機能するプッシュ・トゥ・トーク -->
                     <button class="btn-input-tool" id="btn-mic" title="押している間だけお話しできます">🎙️ おはなし(押しながら)</button>
                     <button class="btn-input-tool" id="btn-cam-action">📷 カメラ</button>
                     <button class="btn-input-tool" id="btn-send-canvas">✏️ 手書きを送信</button>
@@ -417,14 +417,16 @@
         window.addEventListener('touchend', () => { isDrawing = false; });
 
         btnClearCanvas.addEventListener('click', () => { drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height); });
+        
         btnSendCanvas.addEventListener('click', () => {
             const dataUrl = drawCanvas.toDataURL('image/jpeg');
-            askGemini("ここに書いた手書きのメモや式を見て、カズ先生、どう考えたらいいか優しくヒントを教えて！", dataUrl, "✏️ 手書きのメモ・式で相談");
+            // 手書き送信時は、初期テーマなら仮タイトル、すでにテーマが決まっていればそれを維持
+            askGemini("ここに書いた手書きのメモや式を見て、カズ先生、どう考えたらいいか優しくヒントを教えて！", dataUrl, currentSessionTitle === '解きたい問題や目的をそのまま教えてね' ? '手書きの計算・メモ' : currentSessionTitle);
             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
         });
 
         let currentSessionId = 'session_' + Date.now();
-        let currentSessionTitle = '新しい相談ルーム';
+        let currentSessionTitle = '解きたい問題や目的をそのまま教えてね';
         let chatHistory = []; 
         let dialogTurns = [];
         let mediaStream = null;
@@ -594,7 +596,7 @@
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_1') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_2') || '{}');
             sessions[currentSessionId] = {
                 title: currentSessionTitle,
                 updatedAt: new Date().toLocaleString(),
@@ -602,12 +604,12 @@
                 dialogTurns: dialogTurns,
                 lastSpeech: boardSpeech.innerHTML
             };
-            localStorage.setItem('kazu_sessions_v11_1', JSON.stringify(sessions));
+            localStorage.setItem('kazu_sessions_v11_2', JSON.stringify(sessions));
         }
 
         function loadSessionList() {
             historyListContainer.innerHTML = '';
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_1') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_2') || '{}');
             const keys = Object.keys(sessions);
             
             if (keys.length === 0) {
@@ -662,7 +664,7 @@
             }
         }
 
-        async function askGemini(userInputText, base64Image = null, userDisplayText = null) {
+        async function askGemini(userInputText, base64Image = null, overrideTopic = null) {
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
                 updateBoard("エラー", "APIキー未入力", "上の欄に有効な Gemini APIキー を入力してね！", 'APIキーを入れてね');
@@ -676,14 +678,14 @@
                 const ai = new GoogleGenAI({ apiKey: apiKey });
 
                 const systemInstruction = `あなたは小学4年生の算数専用の、とても明るくポジティブで優秀な女性の先生「カズ先生」です。
-目的意識の育成を大切にしており、「今どのテーマについて、何のために考えているか」を常に意識させながら導いてください。
+生徒が入力した式や質問（例: 32.4÷0.23 など）に真摯に向き合い、わかりやすく導いてください。
 
 呼びかけのルール（厳守）：
 1. 生徒の名前「けんし君」は、**褒めるときや、ここぞという応援のタイミングのみ**に控えめに使用してください（毎回名前を呼ぶのは禁止）。
 2. 音声読み上げで不自然にならないよう、「けんしキミ」等の誤読が起きない日本語にしてください。
 
 先生の態度・口調のルール（厳守）：
-1. **常にポジティブ、明るく元気、前向きなトーン**を維持してください。悩む表情やネガティブな弱音（「うーん、どうしよう…」など）は絶対に見せないでください。
+1. **常にポジティブ、明るく元気、前向きなトーン**を維持してください。悩む表情やネガティブな弱音は絶対に見せないでください。
 2. 決して答えや計算結果を直接教えず、けんし君が自分で気づけるよう段階的なヒントを出してください。
 
 漢字使用ルール（厳守）：
@@ -707,17 +709,13 @@
 
                 chatHistory.push({ role: 'user', parts: parts });
 
-                // 【修正】自動要約せず、ユーザーが発言・入力した言葉そのものを「いまの相談テーマ」に直接反映する
-                if (currentSessionTitle === '新しい相談ルーム' && userInputText && !base64Image) {
+                // 【最重要修正】自動要約を完全廃止し、発言や入力された文字をそのまま「いまの相談テーマ」に直貼りする
+                if (overrideTopic) {
+                    currentSessionTitle = overrideTopic;
+                } else if (userInputText && currentSessionTitle === '解きたい問題や目的をそのまま教えてね') {
                     currentSessionTitle = userInputText;
-                    currentTopicText.innerText = currentSessionTitle;
-                } else if (currentSessionTitle === '新しい相談ルーム' && base64Image) {
-                    currentSessionTitle = userDisplayText || 'ノート・問題の相談';
-                    currentTopicText.innerText = currentSessionTitle;
-                } else if (userDisplayText && currentSessionTitle === '新しい相談ルーム') {
-                    currentSessionTitle = userDisplayText;
-                    currentTopicText.innerText = currentSessionTitle;
                 }
+                currentTopicText.innerText = currentSessionTitle;
 
                 const cleanContents = chatHistory.map(turn => ({
                     role: turn.role,
@@ -751,7 +749,7 @@
                     
                     chatHistory.push({ role: 'model', parts: [{ text: response.text }] });
                     
-                    const actualUserText = userDisplayText || userInputText || "質問・相談";
+                    const actualUserText = overrideTopic || userInputText || "質問・相談";
                     dialogTurns.push({
                         userText: actualUserText,
                         aiHtml: replyText,
@@ -819,7 +817,7 @@
             boardTitle.style.display = 'flex';
             previewContainer.style.display = 'flex';
             
-            askGemini("ノートや問題を見せてくれました。答えを言わずに、最初のヒントをポジティブに教えてください。", capturedBase64, "📷 カメラ撮影による相談");
+            askGemini("ノートや問題を見せてくれました。答えを言わずに、最初のヒントをポジティブに教えてください。", capturedBase64, "📷 カメラ撮影の問題");
         });
 
         closeCamBtn.addEventListener('click', () => {
@@ -831,7 +829,7 @@
             updateBoard("待機中", "カズ先生からのメッセージ", "カメラを閉じたよ。いつでも質問してね！", 'いつでも聞いてね！');
         });
 
-        // 【修正】確実なプッシュ・トゥ・トーク（押している間だけON、離したら即送信）
+        // 確実なプッシュ・トゥ・トーク（押している間だけON、離したら即送信）
         let recognition = null;
         let isRecording = false;
 
@@ -858,8 +856,7 @@
             recognition.onresult = (event) => {
                 const speechResult = event.results[0][0].transcript;
                 if (speechResult && speechResult.trim().length > 0) {
-                    currentSessionTitle = speechResult; // 相談テーマに直接設定
-                    currentTopicText.innerText = currentSessionTitle;
+                    // 聞き取った内容を要約せず、そのままテーマに直貼りして送信
                     askGemini(`質問: ${speechResult}。答えを言わずに、ポジティブにわかりやすいヒントを出してください。`, null, speechResult);
                 }
             };
@@ -895,15 +892,15 @@
             }
         }
 
-        // マウス・タッチイベントの厳格な紐付け
-        btnMic.addEventListener('mousedown', (e) => { startListening(e); e.preventDefault(); });
-        window.addEventListener('mouseup', () => { if (isRecording) stopListening(); });
+        // ポインター・タッチイベントの厳格な紐付け
+        btnMic.addEventListener('pointerdown', (e) => { startListening(e); e.preventDefault(); });
+        window.addEventListener('pointerup', () => { if (isRecording) stopListening(); });
         
         btnMic.addEventListener('touchstart', (e) => { startListening(e); e.preventDefault(); }, { passive: false });
         window.addEventListener('touchend', () => { if (isRecording) stopListening(); });
 
         btnEasier.addEventListener('click', () => {
-            askGemini("さっきの説明をもっと簡単にして、別の分かりやすい例えでもう一度ポジティブにヒントを教えて！", null, "💡 もっとわかりやすく");
+            askGemini("さっきの説明をもっと簡単にして、別の分かりやすい例えでもう一度ポジティブにヒントを教えて！", null, currentSessionTitle);
         });
 
         btnSolved.addEventListener('click', () => {
@@ -930,7 +927,7 @@
             saveCurrentSession();
             
             currentSessionId = 'session_' + Date.now();
-            currentSessionTitle = '新しい相談ルーム';
+            currentSessionTitle = '解きたい問題や目的をそのまま教えてね';
             chatHistory = [];
             dialogTurns = [];
             renderTimeline();
