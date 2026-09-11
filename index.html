@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小4算数伴走コーチ (v11.6 修正完全版)</title>
+    <title>カズ先生のホワイトボード - 小4 算数伴走コーチ (v11.6)</title>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -13,10 +13,11 @@
             margin: 0;
             padding: 10px;
         }
+
         /* APIキー入力バー */
         .api-bar {
             background: #1e1e1e;
-            border: 1px solid #333;
+            border: 1px solid #7b1fa2;
             padding: 8px 12px;
             border-radius: 6px;
             margin-bottom: 10px;
@@ -34,35 +35,7 @@
             flex: 1;
         }
 
-        /* メインコンテナ：2カラム構成 */
-        .main-layout {
-            display: flex;
-            gap: 15px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .left-column {
-            flex: 1.2;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .right-column {
-            flex: 0.8;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        /* パネル共通 */
-        .panel {
-            background: #1e1e1e;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 15px;
-        }
-
-        /* ヘッダータイトル部分 */
+        /* ヘッダー */
         .app-header {
             display: flex;
             justify-content: space-between;
@@ -71,6 +44,7 @@
             border: 1px solid #333;
             padding: 10px 15px;
             border-radius: 8px;
+            margin-bottom: 10px;
         }
         .app-title-area {
             display: flex;
@@ -86,24 +60,49 @@
         }
         .app-title-text h1 { font-size: 15px; margin: 0; color: #fff; }
         .app-title-text span { font-size: 11px; color: #aaa; }
-        .btn-history-sub {
-            background: #7b1fa2;
+        .btn-history {
+            background: #c2185b;
             color: #fff;
             border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 6px 14px;
+            border-radius: 6px;
             font-size: 12px;
+            font-weight: bold;
             cursor: pointer;
         }
 
-        /* 音声ステータス・テーマ */
+        /* 音声ステータスバナー */
         .status-banner {
             background: #0277bd;
             color: #fff;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 8px 12px;
+            border-radius: 6px;
             font-size: 13px;
+            margin-bottom: 10px;
+            font-weight: bold;
         }
+
+        /* メインレイアウト：左右2カラム */
+        .main-layout {
+            display: flex;
+            gap: 15px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .left-column {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .right-column {
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* テーマバッジ */
         .theme-badge {
             background: #00838f;
             color: #fff;
@@ -112,17 +111,18 @@
             font-size: 13px;
             align-self: flex-start;
             display: inline-block;
+            margin-bottom: 5px;
         }
 
-        /* カズ先生メッセージエリア */
+        /* カズ先生メッセージボックス */
         .teacher-box {
-            background: #252525;
-            border: 1px solid #444;
+            background: #1e1e1e;
+            border: 1px solid #333;
             border-radius: 8px;
-            padding: 12px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
         .teacher-row {
             display: flex;
@@ -138,44 +138,68 @@
             flex-shrink: 0;
         }
         .teacher-speech-bubble {
-            background: #1e1e1e;
+            background: #252525;
             border: 1px solid #444;
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-radius: 6px;
             font-size: 13px;
             flex: 1;
+            color: #fff;
+        }
+        
+        /* 小数の位ボタン群 */
+        .decimal-section {
+            background: #161616;
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .decimal-title {
+            font-size: 11px;
+            color: #81d4fa;
+            margin-bottom: 6px;
+            font-weight: bold;
         }
         .decimal-buttons {
             display: flex;
             gap: 8px;
-            margin-top: 5px;
         }
         .dec-btn {
-            background: #7b1fa2;
+            background: #00acc1;
             color: #fff;
             border: none;
-            padding: 4px 10px;
+            padding: 6px 12px;
             border-radius: 4px;
             font-size: 12px;
+            font-weight: bold;
             cursor: pointer;
+        }
+
+        .teacher-msg-label {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
         }
         .teacher-long-msg {
             font-size: 13px;
             line-height: 1.6;
             color: #e0e0e0;
-            background: #1a1a1a;
-            padding: 10px;
+            background: #161616;
+            padding: 12px;
             border-radius: 6px;
             border-left: 3px solid #4caf50;
             white-space: pre-wrap;
         }
 
-        /* 右側：対話ログ */
+        /* 右側：対話ログパネル */
         .log-panel {
-            flex: 1;
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
-            min-height: 250px;
+            min-height: 220px;
         }
         .log-header {
             font-size: 13px;
@@ -194,21 +218,29 @@
             font-size: 13px;
             color: #888;
         }
-        .log-item {
-            background: #222;
-            border-left: 3px solid #0277bd;
+        .log-item-user {
+            background: #004d40;
+            border-left: 3px solid #00b0ff;
+            padding: 8px;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            color: #fff;
+        }
+        .log-item-teacher {
+            background: #212121;
+            border-left: 3px solid #4caf50;
             padding: 8px;
             margin-bottom: 6px;
             border-radius: 4px;
             color: #ddd;
         }
 
-        /* 下部：手書きスペース */
+        /* 下部：手書きスペースパネル */
         .canvas-panel {
             background: #1e1e1e;
             border: 1px solid #333;
             border-radius: 8px;
-            padding: 12px;
+            padding: 15px;
         }
         .canvas-header-row {
             display: flex;
@@ -222,7 +254,7 @@
             background: #444;
             color: #fff;
             border: none;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 4px;
             font-size: 11px;
             cursor: pointer;
@@ -234,7 +266,7 @@
             border-radius: 6px;
             height: 160px;
             touch-action: none;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         canvas {
             width: 100%;
@@ -242,23 +274,23 @@
             display: block;
         }
 
-        /* 最下部アクションボタン */
+        /* 最下部アクションボタン群 */
         .bottom-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
         .act-btn {
-            padding: 10px;
+            padding: 10px 8px;
             border: none;
             border-radius: 6px;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             flex: 1;
             text-align: center;
         }
         .btn-speak { background: #fbc02d; color: #000; }
-        .btn-voice-action { background: #2e7d32; color: #fff; }
+        .btn-camera { background: #00838f; color: #fff; }
         .btn-handwriting-send { background: #1565c0; color: #fff; }
     </style>
 </head>
@@ -279,19 +311,17 @@
                 <span>小4 算数伴走コーチ (v11.6)</span>
             </div>
         </div>
-        <button class="btn-history-sub">相談履歴</button>
+        <button class="btn-history">相談履歴</button>
     </div>
 
-    <div style="height: 10px;"></div>
+    <!-- 音声ステータスバナー -->
+    <div id="statusBanner" class="status-banner">🎤 【音声を聞き取り中...話終わったらボタンを押してね】</div>
 
     <!-- メインレイアウト -->
     <div class="main-layout">
         
         <!-- 左カラム -->
         <div class="left-column">
-            <!-- 音声ステータスバナー -->
-            <div id="statusBanner" class="status-banner">🎤 【音声を聞き取り中...話終わったらボタンを押してね】</div>
-            
             <!-- テーマ -->
             <div class="theme-badge">テーマ 手書きの計算・メモ</div>
 
@@ -305,18 +335,17 @@
                 </div>
 
                 <!-- 小数の位ボタン群 -->
-                <div>
-                    <div style="font-size: 11px; color: #aaa; margin-bottom: 4px;">【小数位の位取り】</div>
+                <div class="decimal-section">
+                    <div class="decimal-title">【小数の位取り】</div>
                     <div class="decimal-buttons">
-                        <button class="dec-btn" onclick="insertDecimal(1)">1の位</button>
-                        <button class="dec-btn" onclick="insertDecimal(0.1)">0.1の位</button>
-                        <button class="dec-btn" onclick="insertDecimal(0.01)">0.01の位</button>
+                        <button class="dec-btn" onclick="insertDecimal('1の位')">1の位</button>
+                        <button class="dec-btn" onclick="insertDecimal('0.1の位')">0.1の位</button>
+                        <button class="dec-btn" onclick="insertDecimal('0.01の位')">0.01の位</button>
                     </div>
                 </div>
 
-                <div style="font-size: 12px; color: #aaa; margin-top: 5px;">カズ先生からのメッセージ</div>
-                <div id="teacherLongMsg" class="teacher-long-msg">
-任せて～！カズ先生が、もっともっと分かりやすく説明しちゃうよ！
+                <div class="teacher-msg-label">カズ先生からのメッセージ</div>
+                <div id="teacherLongMsg" class="teacher-long-msg">任せて～！カズ先生が、もっともっと分かりやすく説明しちゃうよ！
 
 小数のわり算はね、"10 ばい虫めがね" のまほうを使うと、一気にかんたんになるんだよ！
 
@@ -330,19 +359,18 @@
 小数点が右に "ぴょん！" と 1 つうごくイメージだよ！
 
 このまほうを使えば、小数のわり算なんてへっちゃらだね！
-けんし君、どんな数に変身したか教えてね！応援しているよ～！
-                </div>
+けんし君、どんな数に変身したか教えてね！応援しているよ～！</div>
             </div>
         </div>
 
         <!-- 右カラム -->
         <div class="right-column">
             <!-- 対話ログパネル -->
-            <div class="panel log-panel">
+            <div class="log-panel">
                 <div class="log-header">対話ログ（ここを押すとその時に戻れるよ）</div>
                 <div id="dialogLog" class="log-content">
-                    <div class="log-item">けんし君: 手書きの計算・メモ</div>
-                    <div class="log-item">カズ先生: 任せて～！カズ先生が、もっともっと分かりやすく説明しちゃうよ!...</div>
+                    <div class="log-item-user">けんし君: 手書きの計算・メモ</div>
+                    <div class="log-item-teacher">カズ先生: 任せて～！カズ先生が、もっともっと分かりやすく説明しちゃうよ!...</div>
                 </div>
             </div>
 
@@ -356,10 +384,10 @@
                     <canvas id="drawCanvas"></canvas>
                 </div>
 
-                <!-- アクションボタン群 -->
+                <!-- 最下部アクションボタン群 -->
                 <div class="bottom-actions">
                     <button class="act-btn btn-speak" onclick="startVoiceInput()">おはなし（タップで開始）</button>
-                    <button class="act-btn btn-voice-action" onclick="startVoiceRecognitionReal()">🎤 マイク</button>
+                    <button class="act-btn btn-camera" onclick="alert('カメラ機能です')">📷 カメラ</button>
                     <button class="act-btn btn-handwriting-send" onclick="sendHandwritingData()">✏️ 手書き送信</button>
                 </div>
             </div>
@@ -368,7 +396,7 @@
     </div>
 
 <script>
-    // 【根本修正1】エラーログで指定された最新の安定モデルに更新
+    // 【重要修正】エラーの原因だった古いモデル名を廃止し、最新の安定版モデルを指定
     const API_MODEL = "gemini-3.6-flash";
 
     // キャンバス描画の初期化
@@ -387,7 +415,7 @@
     window.addEventListener('resize', initCanvasSize);
     initCanvasSize();
 
-    // マウス・タッチイベント
+    // マウス・タッチイベント処理
     canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
     canvas.addEventListener('mousemove', (e) => { if (isDrawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
     canvas.addEventListener('mouseup', () => { isDrawing = false; });
@@ -414,18 +442,12 @@
     }
 
     function insertDecimal(val) {
-        document.getElementById('teacherShortMsg').textContent = `"${val}の位が選ばれたよ！一緒に考えよう"`;
+        document.getElementById('teacherShortMsg').textContent = `"${val}が選ばれたよ！一緒に考えよう"`;
+        appendLog(`けんし君: ${val}を選択しました`, 'user');
     }
 
-    // 【根本修正2】音声認識が即座にエラー落ちする不具合の修正（イベントハンドラの適正化）
+    // 【重要修正】音声認識が即座にエラー落ちする不具合を修正
     function startVoiceInput() {
-        triggerSpeechRecognition();
-    }
-    function startVoiceRecognitionReal() {
-        triggerSpeechRecognition();
-    }
-
-    function triggerSpeechRecognition() {
         const banner = document.getElementById('statusBanner');
         const shortMsg = document.getElementById('teacherShortMsg');
 
@@ -440,7 +462,7 @@
         recognition.interimResults = false;
 
         recognition.onstart = () => {
-            banner.textContent = "🎤 【音声を聞き取り中...話終わったらボタンをそのままにしてね】";
+            banner.textContent = "🎤 【音声を聞き取り中...話終わったらそのままお待ちください】";
             shortMsg.textContent = `"しっかり聞いてるよ、続けて話してね！"`;
         };
 
@@ -448,11 +470,10 @@
             const transcript = event.results[0][0].transcript;
             banner.textContent = `🎤 【聞き取り成功: ${transcript}】`;
             shortMsg.textContent = `"「${transcript}」だね！よく言えました！"`;
-            appendLog(`けんし君(音声): ${transcript}`);
+            appendLog(`けんし君(音声): ${transcript}`, 'user');
         };
 
         recognition.onerror = (event) => {
-            // 即座に致命的クラッシュにせず、ユーザーに優しくリトライを促すステータス表示に変更
             banner.textContent = `⚠️ 音声認識ステータス: ${event.error} (もう一度お話ししてね)`;
         };
 
@@ -463,7 +484,7 @@
         }
     }
 
-    // 【根本修正3】手書き送信時の 404 (gemini-2.5-flash 廃止) エラーの解消と正しいAPI連携
+    // 【重要修正】手書き送信時の 404 エラー（旧モデル廃止）を完全に解消したAPI連携
     async function sendHandwritingData() {
         const apiKey = document.getElementById('apiKeyInput').value.trim();
         const banner = document.getElementById('statusBanner');
@@ -501,7 +522,7 @@
 
             longMsg.textContent = replyText;
             banner.textContent = "✨ カズ先生の解説が届いたよ！";
-            appendLog(`カズ先生: ${replyText.substring(0, 30)}...`);
+            appendLog(`カズ先生: ${replyText.substring(0, 30)}...`, 'teacher');
 
         } catch (error) {
             banner.textContent = `❌ 通信エラー: ${error.message}`;
@@ -509,10 +530,10 @@
         }
     }
 
-    function appendLog(text) {
+    function appendLog(text, sender) {
         const logContent = document.getElementById('dialogLog');
         const div = document.createElement('div');
-        div.className = 'log-item';
+        div.className = sender === 'user' ? 'log-item-user' : 'log-item-teacher';
         div.textContent = text;
         logContent.appendChild(div);
         logContent.scrollTop = logContent.scrollHeight;
