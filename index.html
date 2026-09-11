@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v11.7)</title>
+    <title>AI学習コーチ - カズ先生 (v11.8)</title>
     <script type="importmap">
       {
         "imports": {
@@ -115,8 +115,8 @@
         }
         #visual-svg { width: 100%; height: 75px; }
 
-        #preview-container { display: none; flex-direction: column; align-items: center; gap: 4px; width: 100%; flex-shrink: 0; }
-        #preview-img { max-height: 45px; border-radius: 6px; border: 2px solid var(--splat-yellow); object-fit: contain; }
+        #preview-container { display: none; flex-direction: column; align-items: center; gap: 4px; width: 98%; flex-shrink: 0; background: rgba(0,0,0,0.5); border: 2px solid var(--splat-cyan); border-radius: 8px; padding: 4px; }
+        #preview-img { max-height: 80px; max-width: 100%; border-radius: 6px; border: 2px solid var(--splat-yellow); object-fit: contain; }
 
         .board-text-title { font-size: 12px; font-weight: 900; color: var(--splat-cyan); align-self: flex-start; margin-left: 1%; flex-shrink: 0; }
         
@@ -224,7 +224,7 @@
             <img src="" id="teacher-avatar-base64" class="character-avatar-img" alt="カズ先生">
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数伴走コーチ (v11.7)</span>
+                <span class="character-sub">小4 算数伴走コーチ (v11.8)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -257,7 +257,8 @@
                     </div>
 
                     <div id="preview-container">
-                        <img id="preview-img" alt="問題プレビュー">
+                        <div style="font-size:10px; color:var(--splat-cyan); font-weight:900;">📷 渡してくれた画像/手書きメモ</div>
+                        <img id="preview-img" alt="送信プレビュー">
                     </div>
                     
                     <div class="board-text-title" id="board-title"><span>📝</span> カズ先生からのメッセージ</div>
@@ -406,6 +407,9 @@
         
         btnSendCanvas.addEventListener('click', () => {
             const dataUrl = drawCanvas.toDataURL('image/jpeg');
+            previewImg.src = dataUrl;
+            previewContainer.style.display = 'flex';
+            
             const topicText = currentSessionTitle === '解きたい問題や目的をそのまま教えてね' ? '手書きの計算・メモ' : currentSessionTitle;
             askGemini("ここに書いた手書きのメモを見て、カズ先生、ヒントを教えて！", dataUrl, topicText);
             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
@@ -563,7 +567,7 @@
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_7') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_8') || '{}');
             sessions[currentSessionId] = {
                 title: currentSessionTitle,
                 updatedAt: new Date().toLocaleString(),
@@ -571,12 +575,12 @@
                 dialogTurns: dialogTurns,
                 lastSpeech: boardSpeech.innerHTML
             };
-            localStorage.setItem('kazu_sessions_v11_7', JSON.stringify(sessions));
+            localStorage.setItem('kazu_sessions_v11_8', JSON.stringify(sessions));
         }
 
         function loadSessionList() {
             historyListContainer.innerHTML = '';
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_7') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_8') || '{}');
             const keys = Object.keys(sessions);
             
             if (keys.length === 0) {
@@ -769,26 +773,28 @@
             if (!isRecording) {
                 recognition = new SpeechRecognition();
                 recognition.lang = 'ja-JP';
-                recognition.interimResults = false;
+                recognition.interimResults = true;
                 recognition.maxAlternatives = 1;
+
+                let finalTranscript = '';
 
                 recognition.onstart = () => {
                     isRecording = true;
                     btnMic.classList.add('recording');
-                    btnMic.innerText = "🔴 聞き取り中...(もう一度押すと送信)";
+                    btnMic.innerText = "🔴 聞き取り中...(もう一度押して送信)";
                     setChildStatus('listening', '【音声を聞き取り中…話終わったらボタンを押してね】');
                 };
 
                 recognition.onresult = (event) => {
-                    const speechResult = event.results[0][0].transcript;
-                    if (speechResult && speechResult.trim().length > 0) {
-                        stopAndSendSpeech(speechResult);
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        }
                     }
                 };
 
                 recognition.onerror = (err) => {
                     console.warn("SpeechRec error:", err);
-                    stopAndSendSpeech("");
                 };
 
                 recognition.onend = () => {
@@ -797,6 +803,11 @@
                         btnMic.classList.remove('recording');
                         btnMic.innerText = "🎙️ おはなし(タップで開始)";
                         setChildStatus('ready');
+                        if (finalTranscript.trim().length > 0) {
+                            stopAndSendSpeech(finalTranscript.trim());
+                        } else {
+                            setChildStatus('ready', 'うまく聞き取れなかったよ。もう一度教えてね！');
+                        }
                     }
                 };
 
@@ -818,8 +829,6 @@
             btnMic.innerText = "🎙️ おはなし(タップで開始)";
             if (text) {
                 askGemini(`質問: ${text}。答えを言わずに、ポジティブにわかりやすいヒントを出してください。`, null, text);
-            } else {
-                setChildStatus('ready', 'うまく聞き取れなかったよ。もう一度教えてね！');
             }
         }
 
