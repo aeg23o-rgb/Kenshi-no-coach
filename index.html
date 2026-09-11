@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v11.12)</title>
+    <title>AI学習コーチ - カズ先生 (v11.15)</title>
     <script type="importmap">
       {
         "imports": {
@@ -186,9 +186,6 @@
         .btn-input-tool:disabled { opacity: 0.4; cursor: not-allowed; }
         
         #btn-mic { background: var(--splat-yellow); flex: 1; justify-content: center; font-size: 13px; }
-        #btn-mic.recording { background: var(--splat-pink); color: #FFF; animation: pulseMic 0.8s infinite; }
-        @keyframes pulseMic { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-
         #btn-cam-action { background: var(--splat-cyan); }
         #btn-clear-canvas { background: #3E4670; color: #FFF; font-size: 10px; padding: 3px 6px; }
         #btn-send-canvas { background: var(--splat-yellow); }
@@ -224,7 +221,7 @@
             <img src="image_10.png" id="teacher-avatar-base64" class="character-avatar-img" alt="カズ先生" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\'><circle cx=\'16\' cy=\'16\' r=\'16\' fill=\'#7B00FF\'/><text x=\'16\' y=\'21\' font-size=\'12\' fill=\'%23CCFF00\' text-anchor=\'middle\' font-weight=\'bold\'>カズ</text></svg>'">
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数伴走コーチ (v11.12)</span>
+                <span class="character-sub">小4 算数伴走コーチ (v11.15)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -235,7 +232,7 @@
     <main>
         <div id="left-pane">
             <div id="child-status-frame">
-                <span id="banner-icon">🟢</span> <span id="banner-text">いまは話せるよ！下のカメラや手書きも使ってね</span>
+                <span id="banner-icon">💡</span> <span id="banner-text">音声や手書き・カメラで問題や数式を送ってね！</span>
             </div>
             
             <div id="topic-frame">
@@ -263,7 +260,7 @@
                     
                     <div class="board-text-title" id="board-title"><span>📝</span> カズ先生からのメッセージ</div>
                     <div class="board-text-body" id="board-speech">
-                        こんにちは、けんし君！解きたい式や問題を、カメラや手書きスペースで教えてね。一緒にがんばろう！
+                        こんにちは、けんし君！下の<b>「🎙️ おはなし」</b>で話しかけるか、手書き、カメラで送ってね！
                     </div>
                 </div>
             </div>
@@ -319,7 +316,7 @@
         <div class="modal-box" style="align-items: center;">
             <div style="font-weight:900; color:var(--splat-yellow); font-size:17px;">よくがんばったね、けんし君！🎉</div>
             <div style="font-size:13px; color:#FFF; line-height:1.4; font-weight:bold;">この問題について、まだ追加で聞いておきたいことはあるかな？</div>
-            <button class="btn-input-tool" id="btn-add-question" style="background: var(--splat-cyan); color:#0B0E14; width:100%; font-size:13px; justify-content:center;">🎤 まだ続ける / 質問する</button>
+            <button class="btn-input-tool" id="btn-add-question" style="background: var(--splat-cyan); color:#0B0E14; width:100%; font-size:13px; justify-content:center;">✏️ まだ続ける / 質問する</button>
             <button class="btn-input-tool" id="btn-end-session" style="background: var(--splat-pink); color:#FFF; width:100%; font-size:13px; justify-content:center;">🏁 相談を終了してきろくする</button>
         </div>
     </div>
@@ -329,7 +326,6 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        // 画像の二重保険アタッチ
         const avatarSrc = "image_10.png";
         document.querySelectorAll('.teacher-avatar-base64-large, #teacher-avatar-base64').forEach(img => {
             img.src = avatarSrc;
@@ -412,7 +408,7 @@
             previewImg.src = dataUrl;
             previewContainer.style.display = 'flex';
             
-            askGemini("この手書きの計算メモを見てください。ここに書かれている数式や問題を正確に読み取り、最初の返答の冒頭でその数式をテーマやタイトルとして明確にしてください。カズ先生、ヒントを教えて！", dataUrl, null);
+            askGemini("この手書きの計算メモを見てください。そこに書かれている数式や問題を正確に読み取り、最初の返答の冒頭でその数式をテーマやタイトルとして明確にしてください。カズ先生、ヒントを教えて！", dataUrl, null);
             drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
         });
 
@@ -432,16 +428,16 @@
         function setChildStatus(mode, customText = '') {
             childStatusFrame.className = '';
             if (mode === 'ready') {
-                bannerIcon.innerText = '🟢';
-                bannerText.innerText = customText || 'いまは話せるよ！下のカメラや手書きも使ってね';
-            } else if (mode === 'listening') {
-                childStatusFrame.classList.add('listening');
-                bannerIcon.innerText = '🎙️';
-                bannerText.innerText = customText || '【音声を聞き取り中…話終わったらボタンを押してね】';
+                bannerIcon.innerText = '💡';
+                bannerText.innerText = customText || '音声や手書き・カメラで問題や数式を送ってね！';
             } else if (mode === 'thinking') {
                 childStatusFrame.classList.add('thinking');
                 bannerIcon.innerText = '⏳';
                 bannerText.innerText = customText || '【カズ先生が考えています…（じっと待ってね！）】';
+            } else if (mode === 'listening') {
+                childStatusFrame.classList.add('listening');
+                bannerIcon.innerText = '🎙️';
+                bannerText.innerText = customText || '【聞いてるよ！はなしてね…】';
             }
         }
 
@@ -568,7 +564,7 @@
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_12') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_15') || '{}');
             sessions[currentSessionId] = {
                 title: currentSessionTitle,
                 updatedAt: new Date().toLocaleString(),
@@ -576,12 +572,12 @@
                 dialogTurns: dialogTurns,
                 lastSpeech: boardSpeech.innerHTML
             };
-            localStorage.setItem('kazu_sessions_v11_12', JSON.stringify(sessions));
+            localStorage.setItem('kazu_sessions_v11_15', JSON.stringify(sessions));
         }
 
         function loadSessionList() {
             historyListContainer.innerHTML = '';
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_12') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_15') || '{}');
             const keys = Object.keys(sessions);
             
             if (keys.length === 0) {
@@ -634,7 +630,7 @@
 生徒の名前「けんし君」は、褒めるときやここぞという応援のタイミングのみに控えめに使用してください。
 常にポジティブ、明るく元気、前向きなトーンを維持してください。決して計算結果を直接教えず、段階的なヒントを出してください。
 使える漢字は小4まで。小5以上は読み仮名をつけるかひらがなにする。
-【超重要ルール】：もしユーザーから画像（手書きメモやカメラ画像）が渡された場合、画像内に書かれている数式や問題（例: 26.3 ÷ 0.41 など）をモデル自身で読み取り、返答の最初に「テーマ：〇〇の計算」またはその数式を明記してください。
+【超重要ルール】：もしユーザーから画像（手書きメモやカメラ画像）が渡された場合、画像内に書かれている数式や問題（例: 23.4 ÷ 0.13 など）をモデル自身で読み取り、返答の最初に「テーマ：〇〇の計算」またはその数式を明記してください。
 返答の最後に図解の種類として【図解:bars】、【図解:blocks】、【図解:decimals】、または【図解:none】を必ず指定すること。`;
 
                 let parts = [];
@@ -658,7 +654,7 @@
                 }));
 
                 const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
+                    model: 'gemini-3.7-flash',
                     contents: cleanContents,
                     config: { systemInstruction: systemInstruction }
                 });
@@ -722,7 +718,7 @@
             } catch (err) {
                 console.error("SDK Error:", err);
                 setChildStatus('ready');
-                boardSpeech.innerHTML = `通信エラーが発生しました: ${err.message}`;
+                boardSpeech.innerHTML = `通信エラーが発生しました: ${err.message}<br><span style="font-size:12px; color:var(--splat-yellow);">もう一度送ってみてね！</span>`;
             } finally {
                 setButtonsEnabled(true);
             }
@@ -774,86 +770,49 @@
             setChildStatus('ready');
         });
 
+        // 音声認識 (Web Speech API) の組み込み
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
-        let isRecording = false;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ja-JP';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                setChildStatus('listening', '【聞いてるよ！はなしてね…】');
+                btnMic.style.background = '#FF0055';
+                btnMic.style.color = '#FFF';
+            };
+
+            recognition.onresult = (event) => {
+                const speechText = event.results[0][0].transcript;
+                askGemini(speechText, null, null);
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error", event.error);
+                setChildStatus('ready', '音声がきき取れなかったよ。もう一度試してね！');
+            };
+
+            recognition.onend = () => {
+                btnMic.style.background = 'var(--splat-yellow)';
+                btnMic.style.color = '#0B0E14';
+            };
+        }
 
         btnMic.addEventListener('click', () => {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            
-            if (!SpeechRecognition) {
-                // 音声認識が使えない場合はプロンプトを出さず、ボードに直接わかりやすい案内を表示
-                setChildStatus('ready', '下のカメラや手書きメモを使って教えてね！');
-                boardSpeech.innerHTML = "この環境では音声入力が使えないみたい。<br>下の<b>「📷 カメラ」</b>でノートを写すか、<b>「✏️ 手書きスペース」</b>で文字や数式を書いて送ってね！";
-                speakText("カメラでノートを写すか、手書きスペースを使って教えてね。");
+            if (!recognition) {
+                alert('お使いのブラウザは音声認識に対応していません。手書きやカメラを使ってね！');
                 return;
             }
-
-            if (!isRecording) {
-                try {
-                    recognition = new SpeechRecognition();
-                    recognition.lang = 'ja-JP';
-                    recognition.interimResults = true;
-                    recognition.maxAlternatives = 1;
-
-                    let finalTranscript = '';
-
-                    recognition.onstart = () => {
-                        isRecording = true;
-                        btnMic.classList.add('recording');
-                        btnMic.innerText = "🔴 聞き取り中...(もう一度押して送信)";
-                        setChildStatus('listening', '【音声を聞き取り中…話終わったらボタンを押してね】');
-                    };
-
-                    recognition.onresult = (event) => {
-                        for (let i = event.resultIndex; i < event.results.length; ++i) {
-                            if (event.results[i].isFinal) {
-                                finalTranscript += event.results[i][0].transcript;
-                            }
-                        }
-                    };
-
-                    recognition.onerror = (err) => {
-                        console.warn("SpeechRec error:", err);
-                    };
-
-                    recognition.onend = () => {
-                        if (isRecording) {
-                            isRecording = false;
-                            btnMic.classList.remove('recording');
-                            btnMic.innerText = "🎙️ おはなし(タップで開始)";
-                            setChildStatus('ready');
-                            if (finalTranscript.trim().length > 0) {
-                                stopAndSendSpeech(finalTranscript.trim());
-                            } else {
-                                // 聞き取れなかった場合のポップアップ表示を廃止し、より親切な案内をボードに表示
-                                setChildStatus('ready', '下のカメラや手書きメモを使ってね！');
-                                boardSpeech.innerHTML = "うまく音声を拾えなかったよ。<br>下の<b>「📷 カメラ」</b>でノートを写すか、<b>「✏️ 手書きスペース」</b>で書いて送ってみてね！";
-                                speakText("カメラか手書きスペースを使って教えてね。");
-                            }
-                        }
-                    };
-
-                    recognition.start();
-                } catch(e) {
-                    isRecording = false;
-                    setChildStatus('ready', '下のカメラや手書きメモを使ってね！');
-                    boardSpeech.innerHTML = "マイクを起動できなかったよ。<br>下の<b>「📷 カメラ」</b>や<b>「✏️ 手書きスペース」</b>を使ってみてね！";
-                }
-            } else {
-                if (recognition) {
-                    try { recognition.stop(); } catch(e){}
-                }
+            try {
+                recognition.start();
+            } catch (e) {
+                console.error(e);
+                recognition.stop();
             }
         });
-
-        function stopAndSendSpeech(text) {
-            isRecording = false;
-            btnMic.classList.remove('recording');
-            btnMic.innerText = "🎙️ おはなし(タップで開始)";
-            if (text) {
-                askGemini(`質問: ${text}。答えを言わずに、ポジティブにわかりやすいヒントを出してください。`, null, text);
-            }
-        }
 
         btnEasier.addEventListener('click', () => {
             askGemini("さっきの説明をもっと簡単にして、別の分かりやすい例えでもう一度ポジティブにヒントを教えて！", null, currentSessionTitle);
@@ -862,7 +821,7 @@
         btnSolved.addEventListener('click', () => { solvedModal.style.display = 'flex'; });
         btnAddQuestion.addEventListener('click', () => {
             solvedModal.style.display = 'none';
-            setChildStatus('ready', 'よし、追加の質問をどうぞ！');
+            setChildStatus('ready', 'よし、手書きや音声で追加の質問をどうぞ！');
         });
 
         btnEndSession.addEventListener('click', () => {
