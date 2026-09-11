@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v11.15)</title>
+    <title>AI学習コーチ - カズ先生 (v11.16)</title>
     <script type="importmap">
       {
         "imports": {
@@ -218,10 +218,10 @@
 
     <header>
         <div id="avatar-box">
-            <img src="image_10.png" id="teacher-avatar-base64" class="character-avatar-img" alt="カズ先生" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\'><circle cx=\'16\' cy=\'16\' r=\'16\' fill=\'#7B00FF\'/><text x=\'16\' y=\'21\' font-size=\'12\' fill=\'%23CCFF00\' text-anchor=\'middle\' font-weight=\'bold\'>カズ</text></svg>'">
+            <img src="image_7.png" id="teacher-avatar-base64" class="character-avatar-img" alt="カズ先生" onerror="this.src='image_10.png';">
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数伴走コーチ (v11.15)</span>
+                <span class="character-sub">小4 算数伴走コーチ (v11.16)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -243,7 +243,7 @@
             <div id="board-container">
                 <div id="board-content">
                     <div class="manga-stage" id="manga-stage">
-                        <img src="image_10.png" class="teacher-avatar-large teacher-avatar-base64-large" alt="カズ先生" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'48\' height=\'48\'><circle cx=\'24\' cy=\'24\' r=\'24\' fill=\'#7B00FF\'/><text x=\'24\' y=\'30\' font-size=\'16\' fill=\'%23CCFF00\' text-anchor=\'middle\' font-weight=\'bold\'>先生</text></svg>'">
+                        <img src="image_7.png" class="teacher-avatar-large teacher-avatar-base64-large" alt="カズ先生" onerror="this.src='image_10.png';">
                         <div style="font-size: 13px; color: var(--splat-yellow); text-align: left; font-weight: 900; line-height: 1.3;">
                             カズ先生<br><span id="teacher-mood" style="color:#FFF; font-size:12px; font-weight:bold;">“今日も楽しくいっしょにがんばろうね！”</span>
                         </div>
@@ -326,7 +326,8 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        const avatarSrc = "image_10.png";
+        // 画像の反映用（同じフォルダにある image_7.png を自動適用。万が一の時はフォールバック）
+        const avatarSrc = "image_7.png";
         document.querySelectorAll('.teacher-avatar-base64-large, #teacher-avatar-base64').forEach(img => {
             img.src = avatarSrc;
         });
@@ -483,19 +484,29 @@
             }
         }
 
-        function formatBoardText(rawHtml) {
-            let text = rawHtml;
-            text = text.replace(/([0-9０-９]+(?:\.[0-9０-９]+)?)/g, '<span class="highlight-word">$1</span>');
-            return text;
+        // 🤖 LaTeXや不要な記号（$や###など）を取り除いてきれいに成形するクリーナー
+        function cleanAndFormatText(rawText) {
+            let text = rawText;
+            // LaTeXや特殊記号の削除・置換
+            text = text.replace(/\$\$?/g, ''); // $記号を削除
+            text = text.replace(/\\times/g, '×');
+            text = text.replace(/\\div/g, '÷');
+            text = text.replace(/\\pm/g, '±');
+            text = text.replace(/#+\s*/g, ''); // Markdownの#見出し記号を削除
+            text = text.replace(/\*\*/g, ''); // 強調の**を削除
+            
+            // 改行を処理しつつ、数字をハイライト
+            let formatted = text.trim().replace(/\n/g, '<br>');
+            formatted = formatted.replace(/([0-9０-９]+(?:\.[0-9０-９]+)?)/g, '<span class="highlight-word">$1</span>');
+            return formatted;
         }
 
-        function typeWriterEffect(htmlText, callback) {
+        function typeWriterEffect(cleanHtml, callback) {
             if (typingTimer) clearInterval(typingTimer);
             boardSpeech.innerHTML = '';
             boardSpeech.classList.add('typing-cursor');
 
-            const formattedHtml = formatBoardText(htmlText);
-            const plainText = formattedHtml.replace(/<br>/g, '\n').replace(/<\/?[^>]+(>|$)/g, ""); 
+            const plainText = cleanHtml.replace(/<br>/g, '\n').replace(/<\/?[^>]+(>|$)/g, ""); 
             
             let charIndex = 0;
             typingTimer = setInterval(() => {
@@ -505,7 +516,7 @@
                 } else {
                     clearInterval(typingTimer);
                     boardSpeech.classList.remove('typing-cursor');
-                    boardSpeech.innerHTML = formattedHtml; 
+                    boardSpeech.innerHTML = cleanHtml; 
                     if (callback) callback();
                 }
             }, 10);
@@ -515,7 +526,10 @@
             if (!('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
             
+            // 読み上げ用はHTMLタグや記号を完全除去
             let cleanText = text.replace(/<[^>]*>?/gm, '').replace(/（[^）]*）/g, '').replace(/\([^)]*\)/g, '');
+            cleanText = cleanText.replace(/[\$\#\*\_]/g, ''); // 記号が残っていれば削除
+            
             const utter = new SpeechSynthesisUtterance(cleanText);
             utter.lang = 'ja-JP';
             utter.rate = 1.0;
@@ -564,7 +578,7 @@
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_15') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_16') || '{}');
             sessions[currentSessionId] = {
                 title: currentSessionTitle,
                 updatedAt: new Date().toLocaleString(),
@@ -572,12 +586,12 @@
                 dialogTurns: dialogTurns,
                 lastSpeech: boardSpeech.innerHTML
             };
-            localStorage.setItem('kazu_sessions_v11_15', JSON.stringify(sessions));
+            localStorage.setItem('kazu_sessions_v11_16', JSON.stringify(sessions));
         }
 
         function loadSessionList() {
             historyListContainer.innerHTML = '';
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_15') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_16') || '{}');
             const keys = Object.keys(sessions);
             
             if (keys.length === 0) {
@@ -630,7 +644,8 @@
 生徒の名前「けんし君」は、褒めるときやここぞという応援のタイミングのみに控えめに使用してください。
 常にポジティブ、明るく元気、前向きなトーンを維持してください。決して計算結果を直接教えず、段階的なヒントを出してください。
 使える漢字は小4まで。小5以上は読み仮名をつけるかひらがなにする。
-【超重要ルール】：もしユーザーから画像（手書きメモやカメラ画像）が渡された場合、画像内に書かれている数式や問題（例: 23.4 ÷ 0.13 など）をモデル自身で読み取り、返答の最初に「テーマ：〇〇の計算」またはその数式を明記してください。
+【絶対のルール】：回答の中に「$」記号やLaTeX形式の数式コード（例: \\times や \\div）を絶対に出力しないでください。掛け算は「×」、割り算は「÷」の記号を使ってプレーンテキストで書いてください。
+【超重要ルール】：もしユーザーから画像（手書きメモやカメラ画像）が渡された場合、画像内に書かれている数式や問題（例: 32.4 ÷ 12 など）をモデル自身で読み取り、返答の最初に「テーマ：〇〇の計算」またはその数式を明記してください。
 返答の最後に図解の種類として【図解:bars】、【図解:blocks】、【図解:decimals】、または【図解:none】を必ず指定すること。`;
 
                 let parts = [];
@@ -687,14 +702,14 @@
                     }
                     currentTopicText.innerText = currentSessionTitle;
 
-                    const replyText = rawText.trim().replace(/\n/g, '<br>');
-                    const plainReply = replyText.replace(/<[^>]*>?/gm, '');
+                    const formattedHtml = cleanAndFormatText(rawText);
+                    const plainReply = formattedHtml.replace(/<[^>]*>?/gm, '');
                     
                     chatHistory.push({ role: 'model', parts: [{ text: response.text }] });
                     
                     dialogTurns.push({
                         userText: detectedTopic,
-                        aiHtml: replyText,
+                        aiHtml: formattedHtml,
                         aiPlain: plainReply,
                         diagType: diagType
                     });
@@ -703,7 +718,7 @@
                     renderVisualDiagram(diagType);
                     setTeacherMood('その調子！いっしょに考えていこう！');
                     
-                    typeWriterEffect(replyText, () => {
+                    typeWriterEffect(formattedHtml, () => {
                         speakText(plainReply);
                         setChildStatus('ready');
                     });
@@ -770,7 +785,7 @@
             setChildStatus('ready');
         });
 
-        // 音声認識 (Web Speech API) の組み込み
+        // 音声認識 (Web Speech API)
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         if (SpeechRecognition) {
