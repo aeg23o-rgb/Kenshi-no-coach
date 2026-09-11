@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v11.11)</title>
+    <title>AI学習コーチ - カズ先生 (v11.11 修正版)</title>
     <script type="importmap">
       {
         "imports": {
@@ -224,7 +224,7 @@
             <img src="" id="teacher-avatar-base64" class="character-avatar-img" alt="カズ先生">
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数伴走コーチ (v11.11)</span>
+                <span class="character-sub">小4 算数伴走コーチ (v11.11 修正版)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -329,12 +329,8 @@
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
 
-        // ユーザーが提供してくれたカズ先生の正確なイラストデータをアバターとして適用
-        const KAZU_TEACHER_AVATAR_DATA = "data:image/jpeg;base64,..."; // ユーザー提供のイラスト画像を直結
-
-        // 代替として、渡された画像のオリジナルのURLやデータを参照できるように設定
         document.querySelectorAll('.teacher-avatar-base64-large, #teacher-avatar-base64').forEach(img => {
-            img.src = "image_10.png"; // ユーザーが提示したこの画像データを確実に紐付け
+            img.src = "image_10.png";
         });
 
         const apiKeyInput = document.getElementById('api-key-input');
@@ -636,7 +632,7 @@
 生徒の名前「けんし君」は、褒めるときやここぞという応援のタイミングのみに控えめに使用してください。
 常にポジティブ、明るく元気、前向きなトーンを維持してください。決して計算結果を直接教えず、段階的なヒントを出してください。
 使える漢字は小4まで。小5以上は読み仮名をつけるかひらがなにする。
-【超重要ルール】：もしユーザーから画像（手書きメモやカメラ画像）が渡された場合、画像内に書かれている数式や問題（例: 26.3 ÷ 0.41 など）をモデル自身で読み取り、返答の最初に「テーマ：〇〇の計算」またはその数式を明記してください。
+【超重要ルール】：もしユーザーから画像（手書きメモやカメラ画像）が渡された場合、画像内に書かれている数式や問題（例: 26.3 ÷ 0.41 など）をモデル自身で読み取り、返答の冒頭でその数式をテーマやタイトルとして明確にしてください。
 返答の最後に図解の種類として【図解:bars】、【図解:blocks】、【図解:decimals】、または【図解:none】を必ず指定すること。`;
 
                 let parts = [];
@@ -659,8 +655,9 @@
                     })
                 }));
 
+                // 【修正】404エラーの原因となっていた古いモデル名を廃止し、最新の安定版モデルへ更新
                 const response = await ai.models.generateContent({
-                    model: 'gemini-2.5-flash',
+                    model: 'gemini-3.6-flash',
                     contents: cleanContents,
                     config: { systemInstruction: systemInstruction }
                 });
