@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v11.16)</title>
+    <title>AI学習コーチ - カズ先生 (v11.17)</title>
     <script type="importmap">
       {
         "imports": {
@@ -44,12 +44,14 @@
         }
         #avatar-box { display: flex; align-items: center; gap: 8px; }
         
+        /* スプラトゥーン風アバター（ネオンの二重リング＆ポップなハイライト） */
         .character-avatar-img {
-            width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--splat-yellow);
-            object-fit: cover; object-position: center; flex-shrink: 0; background: #2B314F;
+            width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--splat-cyan);
+            object-fit: cover; object-position: center; flex-shrink: 0; background: linear-gradient(135deg, var(--splat-purple), var(--splat-pink));
+            box-shadow: 0 0 8px var(--splat-cyan);
         }
         .character-title { display: flex; flex-direction: column; }
-        .character-name { font-weight: 900; font-size: 14px; color: var(--splat-yellow); letter-spacing: 0.5px; }
+        .character-name { font-weight: 900; font-size: 14px; color: var(--splat-yellow); letter-spacing: 0.5px; text-shadow: 1px 1px 0 #000; }
         .character-sub { font-size: 9px; color: #D1D5DB; font-weight: bold; }
         .btn-tab {
             background: var(--splat-purple); color: #FFF; border: 2px solid var(--splat-yellow);
@@ -105,8 +107,9 @@
             background: rgba(0,0,0,0.4); border: 2px solid var(--splat-purple); border-radius: 10px; padding: 6px 10px;
         }
         .teacher-avatar-large {
-            width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--splat-yellow);
-            object-fit: cover; object-position: center; flex-shrink: 0; background: #2B314F;
+            width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--splat-yellow);
+            object-fit: cover; object-position: center; flex-shrink: 0; background: linear-gradient(135deg, var(--splat-purple), var(--splat-cyan));
+            box-shadow: 0 0 10px var(--splat-yellow);
         }
         
         #visual-container {
@@ -218,10 +221,22 @@
 
     <header>
         <div id="avatar-box">
-            <img src="image_7.png" id="teacher-avatar-base64" class="character-avatar-img" alt="カズ先生" onerror="this.src='image_10.png';">
+            <!-- スプラトゥーン風に描画・カスタマイズされたSVGアイコン（インライン埋め込みで確実・綺麗に表示） -->
+            <svg class="character-avatar-img" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="48" fill="#7B00FF" stroke="#CCFF00" stroke-width="4"/>
+                <!-- 髪 (ネオンシアン) -->
+                <path d="M20 60 C 20 30, 80 30, 80 60 C 80 75, 70 85, 50 85 C 30 85, 20 75, 20 60 Z" fill="#00F0FF"/>
+                <!-- ゴーグル（ストリート風） -->
+                <rect x="22" y="38" width="25" height="18" rx="8" fill="#111" stroke="#CCFF00" stroke-width="3"/>
+                <rect x="53" y="38" width="25" height="18" rx="8" fill="#111" stroke="#CCFF00" stroke-width="3"/>
+                <circle cx="34" cy="47" r="5" fill="#FF0055"/>
+                <circle cx="65" cy="47" r="5" fill="#FF0055"/>
+                <!-- 笑顔の口 -->
+                <path d="M 40 68 Q 50 78 60 68" stroke="#CCFF00" stroke-width="4" fill="none" stroke-linecap="round"/>
+            </svg>
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数伴走コーチ (v11.16)</span>
+                <span class="character-sub">小4 算数伴走コーチ (v11.17)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -243,7 +258,15 @@
             <div id="board-container">
                 <div id="board-content">
                     <div class="manga-stage" id="manga-stage">
-                        <img src="image_7.png" class="teacher-avatar-large teacher-avatar-base64-large" alt="カズ先生" onerror="this.src='image_10.png';">
+                        <svg class="teacher-avatar-large teacher-avatar-base64-large" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="48" fill="#7B00FF" stroke="#CCFF00" stroke-width="4"/>
+                            <path d="M20 60 C 20 30, 80 30, 80 60 C 80 75, 70 85, 50 85 C 30 85, 20 75, 20 60 Z" fill="#00F0FF"/>
+                            <rect x="22" y="38" width="25" height="18" rx="8" fill="#111" stroke="#CCFF00" stroke-width="3"/>
+                            <rect x="53" y="38" width="25" height="18" rx="8" fill="#111" stroke="#CCFF00" stroke-width="3"/>
+                            <circle cx="34" cy="47" r="5" fill="#FF0055"/>
+                            <circle cx="65" cy="47" r="5" fill="#FF0055"/>
+                            <path d="M 40 68 Q 50 78 60 68" stroke="#CCFF00" stroke-width="4" fill="none" stroke-linecap="round"/>
+                        </svg>
                         <div style="font-size: 13px; color: var(--splat-yellow); text-align: left; font-weight: 900; line-height: 1.3;">
                             カズ先生<br><span id="teacher-mood" style="color:#FFF; font-size:12px; font-weight:bold;">“今日も楽しくいっしょにがんばろうね！”</span>
                         </div>
@@ -325,12 +348,6 @@
 
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
-
-        // 画像の反映用（同じフォルダにある image_7.png を自動適用。万が一の時はフォールバック）
-        const avatarSrc = "image_7.png";
-        document.querySelectorAll('.teacher-avatar-base64-large, #teacher-avatar-base64').forEach(img => {
-            img.src = avatarSrc;
-        });
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -484,21 +501,33 @@
             }
         }
 
-        // 🤖 LaTeXや不要な記号（$や###など）を取り除いてきれいに成形するクリーナー
         function cleanAndFormatText(rawText) {
             let text = rawText;
-            // LaTeXや特殊記号の削除・置換
-            text = text.replace(/\$\$?/g, ''); // $記号を削除
+            text = text.replace(/\$\$?/g, '');
             text = text.replace(/\\times/g, '×');
             text = text.replace(/\\div/g, '÷');
             text = text.replace(/\\pm/g, '±');
-            text = text.replace(/#+\s*/g, ''); // Markdownの#見出し記号を削除
-            text = text.replace(/\*\*/g, ''); // 強調の**を削除
+            text = text.replace(/#+\s*/g, '');
+            text = text.replace(/\*\*/g, '');
             
-            // 改行を処理しつつ、数字をハイライト
             let formatted = text.trim().replace(/\n/g, '<br>');
             formatted = formatted.replace(/([0-9０-９]+(?:\.[0-9０-９]+)?)/g, '<span class="highlight-word">$1</span>');
             return formatted;
+        }
+
+        // 音声合成による発話出力機能（確実に先生が喋るよう修正）
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            
+            let cleanText = text.replace(/<[^>]*>?/gm, '').replace(/（[^）]*）/g, '').replace(/\([^)]*\)/g, '');
+            cleanText = cleanText.replace(/[\$\#\*\_]/g, '');
+            
+            const utter = new SpeechSynthesisUtterance(cleanText);
+            utter.lang = 'ja-JP';
+            utter.rate = 1.05; // 少しテンポよく
+            utter.pitch = 1.1; // 明るい先生のトーン
+            window.speechSynthesis.speak(utter);
         }
 
         function typeWriterEffect(cleanHtml, callback) {
@@ -520,21 +549,6 @@
                     if (callback) callback();
                 }
             }, 10);
-        }
-
-        function speakText(text) {
-            if (!('speechSynthesis' in window)) return;
-            window.speechSynthesis.cancel();
-            
-            // 読み上げ用はHTMLタグや記号を完全除去
-            let cleanText = text.replace(/<[^>]*>?/gm, '').replace(/（[^）]*）/g, '').replace(/\([^)]*\)/g, '');
-            cleanText = cleanText.replace(/[\$\#\*\_]/g, ''); // 記号が残っていれば削除
-            
-            const utter = new SpeechSynthesisUtterance(cleanText);
-            utter.lang = 'ja-JP';
-            utter.rate = 1.0;
-            utter.pitch = 1.1;
-            window.speechSynthesis.speak(utter);
         }
 
         function renderTimeline() {
@@ -578,7 +592,7 @@
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_16') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_17') || '{}');
             sessions[currentSessionId] = {
                 title: currentSessionTitle,
                 updatedAt: new Date().toLocaleString(),
@@ -586,12 +600,12 @@
                 dialogTurns: dialogTurns,
                 lastSpeech: boardSpeech.innerHTML
             };
-            localStorage.setItem('kazu_sessions_v11_16', JSON.stringify(sessions));
+            localStorage.setItem('kazu_sessions_v11_17', JSON.stringify(sessions));
         }
 
         function loadSessionList() {
             historyListContainer.innerHTML = '';
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_16') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_17') || '{}');
             const keys = Object.keys(sessions);
             
             if (keys.length === 0) {
@@ -640,7 +654,7 @@
 
             try {
                 const ai = new GoogleGenAI({ apiKey: apiKey });
-                const systemInstruction = `あなたは小学4年生の算数専用の、とても明るくポジティブで優秀な女性の先生「カズ先生」です。
+                const systemInstruction = `あなたは小学4年生の算数専用の、とても明るくポジティブで熱血なスプラトゥーン風の先生「カズ先生」です。
 生徒の名前「けんし君」は、褒めるときやここぞという応援のタイミングのみに控えめに使用してください。
 常にポジティブ、明るく元気、前向きなトーンを維持してください。決して計算結果を直接教えず、段階的なヒントを出してください。
 使える漢字は小4まで。小5以上は読み仮名をつけるかひらがなにする。
@@ -719,7 +733,7 @@
                     setTeacherMood('その調子！いっしょに考えていこう！');
                     
                     typeWriterEffect(formattedHtml, () => {
-                        speakText(plainReply);
+                        speakText(plainReply); // タイピング完了と同時に音声読み上げを実行
                         setChildStatus('ready');
                     });
 
@@ -785,7 +799,6 @@
             setChildStatus('ready');
         });
 
-        // 音声認識 (Web Speech API)
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         if (SpeechRecognition) {
