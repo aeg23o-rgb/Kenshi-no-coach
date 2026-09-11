@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - カズ先生 (v11.6)</title>
+    <title>AI学習コーチ - カズ先生 (v11.7)</title>
     <script type="importmap">
       {
         "imports": {
@@ -18,7 +18,7 @@
             --splat-cyan: #00F0FF;
             --splat-pink: #FF0055;
             --splat-bg: #0B0E14;
-            --splat-card: rgba(23, 27, 44, 0.96);
+            --splat-card: rgba(23, 27, 44, 0.98);
             --splat-border: #2B314F;
         }
         body, html {
@@ -26,178 +26,181 @@
             font-family: 'Helvetica Neue', Arial, sans-serif; 
             background: var(--splat-bg);
             overflow: hidden; display: flex; flex-direction: column; color: #FFF;
-            user-select: none;
+            user-select: none; box-sizing: border-box;
         }
         #config-bar {
-            background: var(--splat-purple); color: #fff; padding: 4px 12px;
-            display: flex; gap: 8px; align-items: center; font-size: 11px;
-            border-bottom: 2px solid var(--splat-yellow); flex-shrink: 0; z-index: 20;
+            background: var(--splat-purple); color: #fff; padding: 2px 10px;
+            display: flex; gap: 6px; align-items: center; font-size: 11px;
+            border-bottom: 2px solid var(--splat-yellow); flex-shrink: 0; z-index: 30;
         }
         #config-bar input {
-            flex: 1; padding: 4px 8px; border-radius: 6px; border: none;
+            flex: 1; padding: 3px 6px; border-radius: 4px; border: none;
             font-size: 11px; background: #1E1235; color: #FFF; font-weight: bold;
         }
         header {
-            height: 50px; background: var(--splat-card); flex-shrink: 0;
-            border-bottom: 3px solid var(--splat-yellow);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 20;
+            height: 42px; background: var(--splat-card); flex-shrink: 0;
+            border-bottom: 2px solid var(--splat-yellow);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 12px; z-index: 20;
         }
-        #avatar-box { display: flex; align-items: center; gap: 10px; }
+        #avatar-box { display: flex; align-items: center; gap: 8px; }
+        
         .character-avatar-img {
-            width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--splat-yellow);
-            object-fit: cover; object-position: 35% 20%;
+            width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--splat-yellow);
+            object-fit: cover; object-position: 35% 20%; flex-shrink: 0;
         }
         .character-title { display: flex; flex-direction: column; }
-        .character-name { font-weight: 900; font-size: 15px; color: var(--splat-yellow); letter-spacing: 0.5px; }
-        .character-sub { font-size: 10px; color: #D1D5DB; font-weight: bold; }
+        .character-name { font-weight: 900; font-size: 14px; color: var(--splat-yellow); letter-spacing: 0.5px; }
+        .character-sub { font-size: 9px; color: #D1D5DB; font-weight: bold; }
         .btn-tab {
             background: var(--splat-purple); color: #FFF; border: 2px solid var(--splat-yellow);
-            padding: 6px 14px; border-radius: 10px; font-size: 12px; font-weight: 900; cursor: pointer;
-            box-shadow: 0 3px 0 #000;
+            padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 900; cursor: pointer;
+            box-shadow: 0 2px 0 #000;
         }
-        .btn-tab:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
+        .btn-tab:active { transform: translateY(2px); box-shadow: 0 0 0 #000; }
 
         main {
-            flex: 1; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 10px; padding: 10px;
+            flex: 1; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 8px; padding: 8px;
             overflow: hidden; max-width: 1450px; width: 100%; margin: 0 auto; box-sizing: border-box; min-height: 0;
         }
 
         #left-pane {
-            display: flex; flex-direction: column; gap: 8px; min-height: 0; height: 100%;
+            display: flex; flex-direction: column; gap: 6px; min-height: 0; height: 100%;
+        }
+
+        #child-status-frame {
+            background: #171B2C; border: 2px solid var(--splat-cyan); border-radius: 12px;
+            padding: 6px 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
+            flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,240,255,0.2);
+        }
+        #child-status-frame.thinking { background: #3B003B; border-color: var(--splat-pink); animation: pulseThink 1s infinite alternate; }
+        #child-status-frame.listening { background: #003333; border-color: var(--splat-yellow); animation: pulseListen 0.8s infinite alternate; }
+        @keyframes pulseThink { from { opacity: 0.9; } to { opacity: 1; transform: scale(1.005); } }
+        @keyframes pulseListen { from { opacity: 0.9; } to { opacity: 1; transform: scale(1.005); } }
+        #banner-icon { font-size: 16px; }
+        #banner-text { font-size: 13px; font-weight: 900; color: #FFF; }
+
+        #topic-frame {
+            background: #121726; border: 2px solid var(--splat-purple); border-radius: 12px;
+            padding: 6px 12px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+        }
+        #topic-label {
+            font-size: 10px; background: var(--splat-cyan); color: #0B0E14; font-weight: 900; padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
+        }
+        #current-topic-text {
+            font-size: 13px; font-weight: 900; color: var(--splat-yellow); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         
         #board-container {
-            flex: 1; background: var(--splat-card); border-radius: 16px;
+            flex: 1; background: var(--splat-card); border-radius: 14px;
             border: 3px solid var(--splat-yellow); display: flex; flex-direction: column; position: relative; overflow: hidden; min-height: 0;
-        }
-        
-        /* 先生の状態を子供にハッキリ伝えるキッズステータスバナー */
-        #child-status-banner {
-            background: #2B314F; color: var(--splat-yellow); padding: 8px 14px;
-            font-size: 13px; font-weight: 900; text-align: center; border-bottom: 2px solid var(--splat-border);
-            display: flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0;
-        }
-        #child-status-banner.thinking { background: linear-gradient(90deg, #7B00FF, #FF0055); color: #FFF; animation: glowBanner 1s infinite alternate; }
-        #child-status-banner.listening { background: linear-gradient(90deg, #00F0FF, #7B00FF); color: #0B0E14; animation: glowBanner 0.8s infinite alternate; }
-        @keyframes glowBanner { from { opacity: 0.85; } to { opacity: 1; transform: scale(1.01); } }
-
-        #current-topic-banner {
-            background: #1E1235; border-bottom: 3px solid var(--splat-cyan);
-            padding: 8px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;
-        }
-        #current-topic-label {
-            font-size: 10px; background: var(--splat-cyan); color: #0B0E14; font-weight: 900; padding: 3px 8px; border-radius: 4px; flex-shrink: 0;
-        }
-        #current-topic-text {
-            font-size: 15px; font-weight: 900; color: var(--splat-yellow); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
         #board-content {
             flex: 1; display: flex; flex-direction: column; align-items: center;
-            padding: 10px; text-align: center; gap: 8px; overflow-y: auto; min-height: 0;
+            padding: 8px; text-align: center; gap: 6px; overflow-y: auto; min-height: 0;
         }
         
         .manga-stage {
-            display: flex; gap: 12px; align-items: center; width: 98%; flex-shrink: 0;
-            background: rgba(0,0,0,0.4); border: 2px solid var(--splat-purple); border-radius: 12px; padding: 8px 14px;
+            display: flex; gap: 10px; align-items: center; width: 98%; flex-shrink: 0;
+            background: rgba(0,0,0,0.4); border: 2px solid var(--splat-purple); border-radius: 10px; padding: 6px 10px;
         }
         .teacher-avatar-large {
-            width: 56px; height: 56px; border-radius: 50%; border: 2px solid var(--splat-yellow);
+            width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--splat-yellow);
             object-fit: cover; object-position: 35% 20%; flex-shrink: 0;
         }
         
         #visual-container {
             display: none; width: 98%; background: #0D101A; flex-shrink: 0;
-            border: 2px solid var(--splat-cyan); border-radius: 10px; padding: 6px; flex-direction: column; align-items: center; justify-content: center;
+            border: 2px solid var(--splat-cyan); border-radius: 8px; padding: 4px; flex-direction: column; align-items: center; justify-content: center;
         }
-        #visual-svg { width: 100%; height: 90px; }
+        #visual-svg { width: 100%; height: 75px; }
 
         #preview-container { display: none; flex-direction: column; align-items: center; gap: 4px; width: 100%; flex-shrink: 0; }
-        #preview-img { max-height: 50px; border-radius: 6px; border: 2px solid var(--splat-yellow); object-fit: contain; }
+        #preview-img { max-height: 45px; border-radius: 6px; border: 2px solid var(--splat-yellow); object-fit: contain; }
 
-        .board-text-title { font-size: 13px; font-weight: 900; color: var(--splat-cyan); align-self: flex-start; margin-left: 1%; flex-shrink: 0; }
+        .board-text-title { font-size: 12px; font-weight: 900; color: var(--splat-cyan); align-self: flex-start; margin-left: 1%; flex-shrink: 0; }
         
         .board-text-body { 
-            font-size: 16px; color: #FFF; line-height: 1.6; 
+            font-size: 15px; color: #FFF; line-height: 1.5; 
             text-align: left; width: 98%; 
-            padding: 12px 16px; box-sizing: border-box; 
-            background: #111522; border-radius: 12px; border: 2px solid var(--splat-border);
+            padding: 10px 14px; box-sizing: border-box; 
+            background: #111522; border-radius: 10px; border: 2px solid var(--splat-border);
             font-weight: bold; flex-shrink: 0;
         }
         .board-text-body .highlight-word {
-            color: var(--splat-yellow); font-size: 18px; font-weight: 900; background: rgba(204,255,0,0.15); padding: 0 4px; border-radius: 4px;
+            color: var(--splat-yellow); font-size: 17px; font-weight: 900; background: rgba(204,255,0,0.15); padding: 0 4px; border-radius: 4px;
         }
 
-        .action-bar { padding: 4px 0; display: flex; gap: 10px; justify-content: center; flex-shrink: 0; }
+        .action-bar { padding: 2px 0; display: flex; gap: 8px; justify-content: center; flex-shrink: 0; }
         .btn-action {
-            border: none; border-radius: 14px; font-weight: 900; font-size: 14px; cursor: pointer;
-            padding: 10px 18px; color: #0B0E14; display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.5); flex: 1; justify-content: center;
+            border: none; border-radius: 12px; font-weight: 900; font-size: 13px; cursor: pointer;
+            padding: 8px 14px; color: #0B0E14; display: flex; align-items: center; gap: 6px;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.5); flex: 1; justify-content: center;
         }
         .btn-action:disabled { opacity: 0.4; cursor: not-allowed; }
-        .btn-action:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.5); }
+        .btn-action:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,0.5); }
         #btn-easier { background: var(--splat-cyan); }
         #btn-solved { background: var(--splat-pink); color: #FFF; }
 
         #right-pane {
-            display: flex; flex-direction: column; gap: 8px; min-width: 280px; height: 100%; min-height: 0;
+            display: flex; flex-direction: column; gap: 6px; min-width: 260px; height: 100%; min-height: 0;
         }
 
         #timeline-card-wrapper {
             flex: 1; background: var(--splat-card); border: 2px solid var(--splat-border);
-            border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; min-height: 0;
+            border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; min-height: 0;
         }
         .pane-header {
-            background: rgba(0,0,0,0.4); padding: 8px 12px; font-size: 11px; color: var(--splat-cyan);
+            background: rgba(0,0,0,0.4); padding: 6px 10px; font-size: 11px; color: var(--splat-cyan);
             font-weight: 900; border-bottom: 2px solid var(--splat-border); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
         }
         #timeline-container {
-            flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; min-height: 0;
+            flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 5px; min-height: 0;
         }
         .timeline-item {
-            background: #121726; border: 2px solid var(--splat-border); border-radius: 8px; padding: 6px 10px;
+            background: #121726; border: 2px solid var(--splat-border); border-radius: 8px; padding: 5px 8px;
             cursor: pointer; transition: all 0.2s; text-align: left; flex-shrink: 0;
         }
         .timeline-item:hover { border-color: var(--splat-yellow); background: #1A2138; }
         .timeline-item.active { border-color: var(--splat-cyan); background: rgba(0,240,255,0.08); }
-        .tl-user { font-size: 11px; color: var(--splat-cyan); font-weight: 900; margin-bottom: 2px; }
-        .tl-content { font-size: 12px; color: #D1D5DB; font-weight: bold; }
+        .tl-user { font-size: 10px; color: var(--splat-cyan); font-weight: 900; margin-bottom: 1px; }
+        .tl-content { font-size: 11px; color: #D1D5DB; font-weight: bold; }
 
         #handwriting-card {
-            flex: 1.5; background: var(--splat-card); border: 3px solid var(--splat-yellow);
-            border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; min-height: 0;
+            flex: 1.4; background: var(--splat-card); border: 3px solid var(--splat-yellow);
+            border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; min-height: 0;
         }
         #draw-canvas {
             flex: 1; background: #0D101A; cursor: crosshair; touch-action: none; width: 100%; display: block; min-height: 0;
         }
         
         .input-control-bar {
-            padding: 8px 10px; background: rgba(0,0,0,0.7); display: flex; gap: 8px; align-items: center; justify-content: space-between; border-top: 2px solid var(--splat-border); flex-shrink: 0;
+            padding: 6px 8px; background: rgba(0,0,0,0.8); display: flex; gap: 6px; align-items: center; justify-content: space-between; border-top: 2px solid var(--splat-border); flex-shrink: 0;
         }
         .btn-input-tool {
-            border: none; border-radius: 10px; font-weight: 900; font-size: 13px; cursor: pointer;
-            padding: 10px 14px; display: flex; align-items: center; gap: 6px;
-            box-shadow: 0 3px 0 rgba(0,0,0,0.5); color: #0B0E14; flex-shrink: 0;
+            border: none; border-radius: 8px; font-weight: 900; font-size: 12px; cursor: pointer;
+            padding: 8px 10px; display: flex; align-items: center; gap: 4px;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.5); color: #0B0E14; flex-shrink: 0;
         }
-        .btn-input-tool:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.5); }
+        .btn-input-tool:active { transform: translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,0.5); }
         .btn-input-tool:disabled { opacity: 0.4; cursor: not-allowed; }
         
-        #btn-mic { background: var(--splat-yellow); flex: 1; justify-content: center; font-size: 14px; }
+        #btn-mic { background: var(--splat-yellow); flex: 1; justify-content: center; font-size: 13px; }
         #btn-mic.recording { background: var(--splat-pink); color: #FFF; animation: pulseMic 0.8s infinite; }
-        @keyframes pulseMic { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+        @keyframes pulseMic { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
 
         #btn-cam-action { background: var(--splat-cyan); }
-        #btn-clear-canvas { background: #3E4670; color: #FFF; font-size: 11px; padding: 4px 8px; }
+        #btn-clear-canvas { background: #3E4670; color: #FFF; font-size: 10px; padding: 3px 6px; }
         #btn-send-canvas { background: var(--splat-yellow); }
 
         .modal-overlay {
             display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.92); z-index: 100; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+            background: rgba(0,0,0,0.92); z-index: 100; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
         }
-        #camera-video { width: 90%; max-width: 480px; max-height: 60vh; border-radius: 16px; border: 4px solid var(--splat-yellow); object-fit: cover; }
+        #camera-video { width: 90%; max-width: 480px; max-height: 60vh; border-radius: 14px; border: 4px solid var(--splat-yellow); object-fit: cover; }
         
-        .modal-box { width: 90%; max-width: 420px; background: var(--splat-card); border: 3px solid var(--splat-yellow); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; text-align: center; }
-        .history-item { background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 10px; border: 2px solid var(--splat-border); cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+        .modal-box { width: 90%; max-width: 400px; background: var(--splat-card); border: 3px solid var(--splat-yellow); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 10px; text-align: center; }
+        .history-item { background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; border: 2px solid var(--splat-border); cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-align: left; }
         .history-item:hover { background: rgba(123,0,255,0.3); border-color: var(--splat-yellow); }
 
         .typing-cursor::after { content: '✍️'; animation: blink 0.5s infinite; }
@@ -218,11 +221,10 @@
 
     <header>
         <div id="avatar-box">
-            <!-- 確実に表示される内蔵Base64/フォールバック対応イラスト -->
-            <img src="kazu-teacher.png" class="character-avatar-img" alt="カズ先生" onerror="this.src='https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop'">
+            <img src="" id="teacher-avatar-base64" class="character-avatar-img" alt="カズ先生">
             <div class="character-title">
                 <span class="character-name">カズ先生のホワイトボード</span>
-                <span class="character-sub">小4 算数伴走コーチ (v11.6)</span>
+                <span class="character-sub">小4 算数伴走コーチ (v11.7)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -232,27 +234,26 @@
 
     <main>
         <div id="left-pane">
-            <div id="board-container">
-                <!-- 先生が何をしているか子供に伝えるステータスバナー -->
-                <div id="child-status-banner">
-                    <span id="banner-icon">🟢</span> <span id="banner-text">いまは話せるよ！マイクを押してね</span>
-                </div>
-                
-                <div id="current-topic-banner">
-                    <span id="current-topic-label">🎯 テーマ</span>
-                    <span id="current-topic-text">解きたい問題や目的をそのまま教えてね</span>
-                </div>
+            <div id="child-status-frame">
+                <span id="banner-icon">🟢</span> <span id="banner-text">いまは話せるよ！マイクを押してね</span>
+            </div>
+            
+            <div id="topic-frame">
+                <span id="topic-label">🎯 テーマ</span>
+                <span id="current-topic-text">解きたい問題や目的をそのまま教えてね</span>
+            </div>
 
+            <div id="board-container">
                 <div id="board-content">
                     <div class="manga-stage" id="manga-stage">
-                        <img src="kazu-teacher.png" class="teacher-avatar-large" alt="カズ先生" onerror="this.src='https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=300&auto=format&fit=crop'">
-                        <div style="font-size: 14px; color: var(--splat-yellow); text-align: left; font-weight: 900; line-height: 1.4;">
-                            カズ先生<br><span id="teacher-mood" style="color:#FFF; font-size:13px; font-weight:bold;">“今日も楽しくいっしょにがんばろうね！”</span>
+                        <img src="" class="teacher-avatar-large teacher-avatar-base64-large" alt="カズ先生">
+                        <div style="font-size: 13px; color: var(--splat-yellow); text-align: left; font-weight: 900; line-height: 1.3;">
+                            カズ先生<br><span id="teacher-mood" style="color:#FFF; font-size:12px; font-weight:bold;">“今日も楽しくいっしょにがんばろうね！”</span>
                         </div>
                     </div>
 
                     <div id="visual-container">
-                        <svg id="visual-svg" viewBox="0 0 400 100"></svg>
+                        <svg id="visual-svg" viewBox="0 0 400 90"></svg>
                     </div>
 
                     <div id="preview-container">
@@ -278,7 +279,7 @@
                     <span>📖 対話ログ（ここを押すとその時に戻れるよ）</span>
                 </div>
                 <div id="timeline-container">
-                    <div style="font-size: 11px; color: #8F94B2; text-align: center; padding: 12px;">ここにやりとりの履歴がたまっていくよ</div>
+                    <div style="font-size: 11px; color: #8F94B2; text-align: center; padding: 10px;">ここにやりとりの履歴がたまっていくよ</div>
                 </div>
             </div>
 
@@ -289,7 +290,6 @@
                 </div>
                 <canvas id="draw-canvas"></canvas>
                 <div class="input-control-bar">
-                    <!-- 確実に分かりやすいトグル式マイクボタン -->
                     <button class="btn-input-tool" id="btn-mic">🎙️ おはなし(タップで開始)</button>
                     <button class="btn-input-tool" id="btn-cam-action">📷 カメラ</button>
                     <button class="btn-input-tool" id="btn-send-canvas">✏️ 手書き送信</button>
@@ -300,26 +300,26 @@
 
     <div id="camera-modal" class="modal-overlay">
         <video id="camera-video" autoplay playsinline muted></video>
-        <div style="display: flex; gap: 12px;">
-            <button class="btn-input-tool" id="snap-btn" style="background: var(--splat-yellow); font-size:15px; padding:12px 24px;">📷 写真をとる</button>
-            <button class="btn-input-tool" id="close-cam-btn" style="background: #8F94B2; color:#000; font-size:15px; padding:12px 24px;">やめる</button>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-input-tool" id="snap-btn" style="background: var(--splat-yellow); font-size:14px; padding:10px 20px;">📷 写真をとる</button>
+            <button class="btn-input-tool" id="close-cam-btn" style="background: #8F94B2; color:#000; font-size:14px; padding:10px 20px;">やめる</button>
         </div>
     </div>
 
     <div id="history-modal" class="modal-overlay">
         <div class="modal-box" style="text-align: left;">
-            <div style="font-weight:900; color:var(--splat-yellow); font-size:16px;">📖 過去の相談ルーム</div>
-            <div id="history-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:50vh; overflow-y:auto;"></div>
-            <button class="btn-input-tool" id="close-history-btn" style="background: #8F94B2; color:#000; width:100%; justify-content:center; font-size:14px;">とじる</button>
+            <div style="font-weight:900; color:var(--splat-yellow); font-size:15px;">📖 過去の相談ルーム</div>
+            <div id="history-list-container" style="display:flex; flex-direction:column; gap:6px; max-height:50vh; overflow-y:auto;"></div>
+            <button class="btn-input-tool" id="close-history-btn" style="background: #8F94B2; color:#000; width:100%; justify-content:center; font-size:13px;">とじる</button>
         </div>
     </div>
 
     <div id="solved-modal" class="modal-overlay">
         <div class="modal-box" style="align-items: center;">
-            <div style="font-weight:900; color:var(--splat-yellow); font-size:18px;">よくがんばったね、けんし君！🎉</div>
-            <div style="font-size:14px; color:#FFF; line-height:1.5; font-weight:bold;">この問題について、まだ追加で聞いておきたいことはあるかな？</div>
-            <button class="btn-input-tool" id="btn-add-question" style="background: var(--splat-cyan); color:#0B0E14; width:100%; font-size:14px; justify-content:center;">🎤 まだ続ける / 質問する</button>
-            <button class="btn-input-tool" id="btn-end-session" style="background: var(--splat-pink); color:#FFF; width:100%; font-size:14px; justify-content:center;">🏁 相談を終了してきろくする</button>
+            <div style="font-weight:900; color:var(--splat-yellow); font-size:17px;">よくがんばったね、けんし君！🎉</div>
+            <div style="font-size:13px; color:#FFF; line-height:1.4; font-weight:bold;">この問題について、まだ追加で聞いておきたいことはあるかな？</div>
+            <button class="btn-input-tool" id="btn-add-question" style="background: var(--splat-cyan); color:#0B0E14; width:100%; font-size:13px; justify-content:center;">🎤 まだ続ける / 質問する</button>
+            <button class="btn-input-tool" id="btn-end-session" style="background: var(--splat-pink); color:#FFF; width:100%; font-size:13px; justify-content:center;">🏁 相談を終了してきろくする</button>
         </div>
     </div>
 
@@ -327,6 +327,10 @@
 
     <script type="module">
         import { GoogleGenAI } from "@google/genai";
+
+        document.querySelectorAll('.teacher-avatar-base64-large, #teacher-avatar-base64').forEach(img => {
+            img.src = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=300&auto=format&fit=crop"; 
+        });
 
         const apiKeyInput = document.getElementById('api-key-input');
         const savedKey = localStorage.getItem('gemini_api_key');
@@ -336,13 +340,12 @@
         });
 
         const boardSpeech = document.getElementById('board-speech');
-        const boardTitle = document.getElementById('board-title');
         const currentTopicText = document.getElementById('current-topic-text');
         const teacherMood = document.getElementById('teacher-mood');
         const visualContainer = document.getElementById('visual-container');
         const visualSvg = document.getElementById('visual-svg');
         const timelineContainer = document.getElementById('timeline-container');
-        const childStatusBanner = document.getElementById('child-status-banner');
+        const childStatusFrame = document.getElementById('child-status-frame');
         const bannerIcon = document.getElementById('banner-icon');
         const bannerText = document.getElementById('banner-text');
         
@@ -375,8 +378,8 @@
 
         function initCanvas() {
             const rect = drawCanvas.getBoundingClientRect();
-            drawCanvas.width = rect.width || drawCanvas.clientWidth || 350;
-            drawCanvas.height = rect.height || drawCanvas.clientHeight || 200;
+            drawCanvas.width = rect.width || drawCanvas.clientWidth || 320;
+            drawCanvas.height = rect.height || drawCanvas.clientHeight || 150;
             drawCtx.strokeStyle = '#00F0FF';
             drawCtx.lineWidth = 4;
             drawCtx.lineCap = 'round';
@@ -422,16 +425,16 @@
         }
 
         function setChildStatus(mode, customText = '') {
-            childStatusBanner.className = '';
+            childStatusFrame.className = '';
             if (mode === 'ready') {
                 bannerIcon.innerText = '🟢';
                 bannerText.innerText = customText || 'いまは話せるよ！マイクを押してね';
             } else if (mode === 'listening') {
-                childStatusBanner.classList.add('listening');
+                childStatusFrame.classList.add('listening');
                 bannerIcon.innerText = '🎙️';
-                bannerText.innerText = customText || '【音声を聞き取り中…話終わったらもう一度マイクを押してね】';
+                bannerText.innerText = customText || '【音声を聞き取り中…話終わったらボタンを押してね】';
             } else if (mode === 'thinking') {
-                childStatusBanner.classList.add('thinking');
+                childStatusFrame.classList.add('thinking');
                 bannerIcon.innerText = '⏳';
                 bannerText.innerText = customText || '【カズ先生が考えています…（じっと待ってね！）】';
             }
@@ -451,30 +454,30 @@
 
             if (type === 'bars') {
                 visualSvg.innerHTML = `
-                    <text x="15" y="18" fill="#00F0FF" font-size="12" font-weight="900">【線分図イメージ】</text>
-                    <line x1="20" y1="38" x2="380" y2="38" stroke="#CCFF00" stroke-width="3" stroke-linecap="round"/>
-                    <rect x="20" y="48" width="230" height="22" fill="#7B00FF" stroke="#00F0FF" stroke-width="2" rx="4"/>
-                    <text x="135" y="63" fill="#FFF" font-size="11" font-weight="bold" text-anchor="middle">もとにする量</text>
-                    <rect x="255" y="48" width="125" height="22" fill="#FF0055" stroke="#CCFF00" stroke-width="2" rx="4"/>
-                    <text x="317" y="63" fill="#FFF" font-size="11" font-weight="bold" text-anchor="middle">比べられる量</text>
+                    <text x="15" y="16" fill="#00F0FF" font-size="11" font-weight="900">【線分図イメージ】</text>
+                    <line x1="20" y1="32" x2="380" y2="32" stroke="#CCFF00" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="20" y="40" width="230" height="20" fill="#7B00FF" stroke="#00F0FF" stroke-width="2" rx="4"/>
+                    <text x="135" y="55" fill="#FFF" font-size="10" font-weight="bold" text-anchor="middle">もとにする量</text>
+                    <rect x="255" y="40" width="125" height="20" fill="#FF0055" stroke="#CCFF00" stroke-width="2" rx="4"/>
+                    <text x="317" y="55" fill="#FFF" font-size="10" font-weight="bold" text-anchor="middle">比べられる量</text>
                 `;
             } else if (type === 'blocks') {
                 let rects = '';
                 for(let i=0; i<4; i++) {
-                    rects += `<rect x="${20 + i*90}" y="28" width="80" height="42" fill="#7B00FF" stroke="#CCFF00" stroke-width="2" rx="6"/>`;
-                    rects += `<text x="${60 + i*90}" y="53" fill="#FFF" font-size="12" font-weight="900" text-anchor="middle">${i+1}つ分</text>`;
+                    rects += `<rect x="${20 + i*90}" y="24" width="80" height="36" fill="#7B00FF" stroke="#CCFF00" stroke-width="2" rx="6"/>`;
+                    rects += `<text x="${60 + i*90}" y="47" fill="#FFF" font-size="11" font-weight="900" text-anchor="middle">${i+1}つ分</text>`;
                 }
-                visualSvg.innerHTML = `<text x="15" y="18" fill="#00F0FF" font-size="12" font-weight="900">【ブロック面積図】</text>` + rects;
+                visualSvg.innerHTML = `<text x="15" y="16" fill="#00F0FF" font-size="11" font-weight="900">【ブロック面積図】</text>` + rects;
             } else if (type === 'decimals') {
                 visualSvg.innerHTML = `
-                    <text x="15" y="18" fill="#00F0FF" font-size="12" font-weight="900">【小数の位取り】</text>
-                    <rect x="30" y="32" width="90" height="40" fill="#7B00FF" stroke="#CCFF00" stroke-width="2" rx="4"/>
-                    <text x="75" y="57" fill="#FFF" font-size="13" font-weight="900" text-anchor="middle">1の位</text>
-                    <text x="135" y="57" fill="#CCFF00" font-size="16" font-weight="900">.</text>
-                    <rect x="150" y="32" width="90" height="40" fill="#FF0055" stroke="#00F0FF" stroke-width="2" rx="4"/>
-                    <text x="195" y="57" fill="#FFF" font-size="13" font-weight="900" text-anchor="middle">0.1の位</text>
-                    <rect x="270" y="32" width="90" height="40" fill="#00F0FF" stroke="#CCFF00" stroke-width="2" rx="4"/>
-                    <text x="315" y="57" fill="#0B0E14" font-size="13" font-weight="900" text-anchor="middle">0.01の位</text>
+                    <text x="15" y="16" fill="#00F0FF" font-size="11" font-weight="900">【小数の位取り】</text>
+                    <rect x="30" y="28" width="90" height="36" fill="#7B00FF" stroke="#CCFF00" stroke-width="2" rx="4"/>
+                    <text x="75" y="51" fill="#FFF" font-size="12" font-weight="900" text-anchor="middle">1の位</text>
+                    <text x="135" y="51" fill="#CCFF00" font-size="15" font-weight="900">.</text>
+                    <rect x="150" y="28" width="90" height="36" fill="#FF0055" stroke="#00F0FF" stroke-width="2" rx="4"/>
+                    <text x="195" y="51" fill="#FFF" font-size="12" font-weight="900" text-anchor="middle">0.1の位</text>
+                    <rect x="270" y="28" width="90" height="36" fill="#00F0FF" stroke="#CCFF00" stroke-width="2" rx="4"/>
+                    <text x="315" y="51" fill="#0B0E14" font-size="12" font-weight="900" text-anchor="middle">0.01の位</text>
                 `;
             }
         }
@@ -504,7 +507,7 @@
                     boardSpeech.innerHTML = formattedHtml; 
                     if (callback) callback();
                 }
-            }, 12);
+            }, 10);
         }
 
         function speakText(text) {
@@ -514,7 +517,7 @@
             let cleanText = text.replace(/<[^>]*>?/gm, '').replace(/（[^）]*）/g, '').replace(/\([^)]*\)/g, '');
             const utter = new SpeechSynthesisUtterance(cleanText);
             utter.lang = 'ja-JP';
-            utter.rate = 0.98;
+            utter.rate = 1.0;
             utter.pitch = 1.1;
             window.speechSynthesis.speak(utter);
         }
@@ -522,7 +525,7 @@
         function renderTimeline() {
             timelineContainer.innerHTML = '';
             if (dialogTurns.length === 0) {
-                timelineContainer.innerHTML = '<div style="font-size: 11px; color: #8F94B2; text-align: center; padding: 12px;">ここにやりとりの履歴がたまっていくよ</div>';
+                timelineContainer.innerHTML = '<div style="font-size: 11px; color: #8F94B2; text-align: center; padding: 10px;">ここにやりとりの履歴がたまっていくよ</div>';
                 return;
             }
             const reversedTurns = [...dialogTurns].reverse();
@@ -534,7 +537,7 @@
                 
                 card.innerHTML = `
                     <div class="tl-user">🗣️ けんし君: ${turn.userText}</div>
-                    <div class="tl-content">📝 カズ先生: ${turn.aiPlain.substring(0, 30)}...</div>
+                    <div class="tl-content">📝 カズ先生: ${turn.aiPlain.substring(0, 25)}...</div>
                 `;
                 card.onclick = () => { jumpToTurn(origIndex); };
                 timelineContainer.appendChild(card);
@@ -560,7 +563,7 @@
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_6') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_7') || '{}');
             sessions[currentSessionId] = {
                 title: currentSessionTitle,
                 updatedAt: new Date().toLocaleString(),
@@ -568,12 +571,12 @@
                 dialogTurns: dialogTurns,
                 lastSpeech: boardSpeech.innerHTML
             };
-            localStorage.setItem('kazu_sessions_v11_6', JSON.stringify(sessions));
+            localStorage.setItem('kazu_sessions_v11_7', JSON.stringify(sessions));
         }
 
         function loadSessionList() {
             historyListContainer.innerHTML = '';
-            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_6') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kazu_sessions_v11_7') || '{}');
             const keys = Object.keys(sessions);
             
             if (keys.length === 0) {
@@ -585,7 +588,7 @@
                 const s = sessions[key];
                 const div = document.createElement('div');
                 div.className = 'history-item';
-                div.innerHTML = `<div><div style="font-weight:bold; font-size:13px; color:#FFF;">${s.title}</div><div style="font-size:11px; color:#8F94B2;">${s.updatedAt}</div></div><span style="font-size:12px; color:var(--splat-yellow); font-weight:900;">ひらく ➔</span>`;
+                div.innerHTML = `<div><div style="font-weight:bold; font-size:12px; color:#FFF;">${s.title}</div><div style="font-size:10px; color:#8F94B2;">${s.updatedAt}</div></div><span style="font-size:11px; color:var(--splat-yellow); font-weight:900;">ひらく ➔</span>`;
                 div.onclick = () => {
                     currentSessionId = key;
                     currentSessionTitle = s.title;
@@ -617,7 +620,7 @@
             }
 
             setButtonsEnabled(false);
-            setChildStatus('thinking'); // 先生が考えていることをバナーで明示
+            setChildStatus('thinking');
             setTeacherMood('よし、いっしょに考えてみよう！');
 
             try {
@@ -688,7 +691,7 @@
                     
                     typeWriterEffect(replyText, () => {
                         speakText(plainReply);
-                        setChildStatus('ready'); // 話し終わったら「話せるよ」に戻す
+                        setChildStatus('ready');
                     });
 
                     saveCurrentSession();
@@ -753,7 +756,6 @@
             setChildStatus('ready');
         });
 
-        // 🟢 確実に安定する「トグル式」マイクボタン（1回タップで開始、もう1回タップで送信・停止）
         let recognition = null;
         let isRecording = false;
 
@@ -765,29 +767,28 @@
             }
 
             if (!isRecording) {
-                // 録音開始
                 recognition = new SpeechRecognition();
                 recognition.lang = 'ja-JP';
                 recognition.interimResults = false;
-                recognition.continuous = false;
+                recognition.maxAlternatives = 1;
 
                 recognition.onstart = () => {
                     isRecording = true;
                     btnMic.classList.add('recording');
-                    btnMic.innerText = "🔴 録音中(もう一度タップで送信)";
-                    setChildStatus('listening', '【音声を聞き取り中…話し終わったらボタンを押してね】');
+                    btnMic.innerText = "🔴 聞き取り中...(もう一度押すと送信)";
+                    setChildStatus('listening', '【音声を聞き取り中…話終わったらボタンを押してね】');
                 };
 
                 recognition.onresult = (event) => {
                     const speechResult = event.results[0][0].transcript;
                     if (speechResult && speechResult.trim().length > 0) {
-                        stopMicAndSend(speechResult);
+                        stopAndSendSpeech(speechResult);
                     }
                 };
 
                 recognition.onerror = (err) => {
                     console.warn("SpeechRec error:", err);
-                    stopMicAndSend("");
+                    stopAndSendSpeech("");
                 };
 
                 recognition.onend = () => {
@@ -795,6 +796,7 @@
                         isRecording = false;
                         btnMic.classList.remove('recording');
                         btnMic.innerText = "🎙️ おはなし(タップで開始)";
+                        setChildStatus('ready');
                     }
                 };
 
@@ -804,14 +806,13 @@
                     isRecording = false;
                 }
             } else {
-                // 手動で停止・送信
                 if (recognition) {
                     try { recognition.stop(); } catch(e){}
                 }
             }
         });
 
-        function stopMicAndSend(text) {
+        function stopAndSendSpeech(text) {
             isRecording = false;
             btnMic.classList.remove('recording');
             btnMic.innerText = "🎙️ おはなし(タップで開始)";
