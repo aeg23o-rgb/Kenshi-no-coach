@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - かず先生 (v11.21)</title>
+    <title>AI学習コーチ - かず先生 (v11.22)</title>
     <script type="importmap">
       {
         "imports": {
@@ -215,7 +215,6 @@
 
     <header>
         <div id="avatar-box">
-            <!-- かず先生のアイコン（スプラ風カラー背景） -->
             <svg class="character-avatar-img" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="48" fill="#1E3A8A" stroke="#CCFF00" stroke-width="4"/>
                 <path d="M 25 45 Q 35 20 65 25 Q 80 30 78 50 Q 70 38 50 35 Q 30 35 25 45 Z" fill="#1E293B"/>
@@ -226,7 +225,7 @@
             </svg>
             <div class="character-title">
                 <span class="character-name">かず先生のホワイトボード</span>
-                <span class="character-sub">小4 算数個別コーチ (v11.21)</span>
+                <span class="character-sub">小4 算数個別コーチ (v11.22)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -394,6 +393,10 @@
         window.addEventListener('load', () => { 
             setTimeout(initCanvas, 100);
             initAudioEngine();
+            // 初期メッセージの自然な自動音声発話（最初の画面表示時）
+            setTimeout(() => {
+                speakText(boardSpeech.innerText);
+            }, 500);
         });
         window.addEventListener('resize', initCanvas);
 
@@ -414,6 +417,7 @@
         btnClearCanvas.addEventListener('click', () => { drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height); });
         
         btnSendCanvas.addEventListener('click', () => {
+            stopAudio(); // ユーザーの操作により音声を即時ストップ
             const dataUrl = drawCanvas.toDataURL('image/jpeg');
             previewImg.src = dataUrl;
             previewContainer.style.display = 'flex';
@@ -506,7 +510,7 @@
             return formatted;
         }
 
-        // 音声出力システムの初期化（ブラウザ制限回避）
+        // 音声エンジン周り
         let availableVoices = [];
         function initAudioEngine() {
             if (!('speechSynthesis' in window)) return;
@@ -521,7 +525,6 @@
                 if (window.speechSynthesis.paused) {
                     window.speechSynthesis.resume();
                 }
-                // ダミーの発話でロックを完全に解除
                 const dummy = new SpeechSynthesisUtterance("");
                 window.speechSynthesis.speak(dummy);
                 
@@ -534,9 +537,16 @@
             window.addEventListener('keydown', unlockAudio);
         }
 
+        function stopAudio() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
         function speakText(text) {
             if (!('speechSynthesis' in window)) return;
             
+            // 新しく喋る前に既存の音声を必ずキャンセルして重ね発話を防ぐ
             window.speechSynthesis.cancel();
             
             let cleanText = text.replace(/<[^>]*>?/gm, '').replace(/（[^）]*）/g, '').replace(/\([^)]*\)/g, '');
@@ -562,7 +572,7 @@
 
                 const utter = new SpeechSynthesisUtterance(phrase);
                 utter.lang = 'ja-JP';
-                utter.rate = 0.95; // 優しい個別指導のスピード
+                utter.rate = 0.95;
                 utter.pitch = 1.0; 
 
                 if (jaVoice) {
@@ -579,7 +589,6 @@
                 window.speechSynthesis.speak(utter);
             }
 
-            // 即時実行を確実にするための少しの遅延
             setTimeout(playNextPhrase, 50);
         }
 
@@ -602,7 +611,6 @@
                 }
             }, 12);
 
-            // 音声発話はテキストのタイピング開始と同時に呼ぶことで確実に喋らせる
             speakText(plainTextForSpeech);
         }
 
@@ -623,12 +631,16 @@
                     <div class="tl-user">🗣️ きみ: ${turn.userText}</div>
                     <div class="tl-content">📝 かず: ${turn.aiPlain.substring(0, 25)}...</div>
                 `;
-                card.onclick = () => { jumpToTurn(origIndex); };
+                card.onclick = () => { 
+                    stopAudio(); // ログ選択で飛ぶときも音声をリセット
+                    jumpToTurn(origIndex); 
+                };
                 timelineContainer.appendChild(card);
             });
         }
 
         function jumpToTurn(index) {
+            stopAudio();
             const target = dialogTurns[index];
             if (!target) return;
             boardSpeech.innerHTML = target.aiHtml;
@@ -647,7 +659,7 @@
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
-            const sessions = JSON.parse(localStorage.getItem('kaz_sessions_v11_21') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kaz_sessions_v11_22') || '{}');
             sessions[currentSessionId] = {
                 title: currentSessionTitle,
                 updatedAt: new Date().toLocaleString(),
@@ -655,12 +667,12 @@
                 dialogTurns: dialogTurns,
                 lastSpeech: boardSpeech.innerHTML
             };
-            localStorage.setItem('kaz_sessions_v11_21', JSON.stringify(sessions));
+            localStorage.setItem('kaz_sessions_v11_22', JSON.stringify(sessions));
         }
 
         function loadSessionList() {
             historyListContainer.innerHTML = '';
-            const sessions = JSON.parse(localStorage.getItem('kaz_sessions_v11_21') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kaz_sessions_v11_22') || '{}');
             const keys = Object.keys(sessions);
             
             if (keys.length === 0) {
@@ -674,6 +686,7 @@
                 div.className = 'history-item';
                 div.innerHTML = `<div><div style="font-weight:bold; font-size:12px; color:#FFF;">${s.title}</div><div style="font-size:10px; color:#8F94B2;">${s.updatedAt}</div></div><span style="font-size:11px; color:var(--splat-yellow); font-weight:900;">ひらく ➔</span>`;
                 div.onclick = () => {
+                    stopAudio();
                     currentSessionId = key;
                     currentSessionTitle = s.title;
                     chatHistory = s.history || [];
@@ -696,10 +709,12 @@
         closeHistoryBtn.addEventListener('click', () => { historyModal.style.display = 'none'; });
 
         async function askGemini(userInputText, base64Image = null, overrideTopic = null) {
+            stopAudio(); // 新しい質問やアクションが始まったら前の音声をすぐ止める
             const apiKey = apiKeyInput.value.trim();
             if (!apiKey) {
                 setChildStatus('ready', 'APIキーを入力してね！');
                 boardSpeech.innerHTML = "上の欄に有効な Gemini APIキー を入力してね。";
+                speakText(boardSpeech.innerText);
                 return;
             }
 
@@ -796,17 +811,20 @@
                 } else {
                     setChildStatus('ready');
                     boardSpeech.innerHTML = "うまく言葉を受け取れなかったみたい。もう一度話してみてね。";
+                    speakText(boardSpeech.innerText);
                 }
             } catch (err) {
                 console.error("SDK Error:", err);
                 setChildStatus('ready');
                 boardSpeech.innerHTML = `エラーが発生しました: ${err.message}<br><span style="font-size:12px; color:var(--splat-yellow);">もう一度送ってみてね。</span>`;
+                speakText("エラーが発生してしまいました。もう一度送ってみてね。");
             } finally {
                 setButtonsEnabled(true);
             }
         }
 
         btnCamAction.addEventListener('click', async () => {
+            stopAudio();
             try {
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     alert('お使いのブラウザはカメラに対応していません。');
@@ -824,6 +842,7 @@
         });
 
         snapBtn.addEventListener('click', () => {
+            stopAudio();
             const canvas = document.getElementById('capture-canvas');
             canvas.width = cameraVideo.videoWidth || 640;
             canvas.height = cameraVideo.videoHeight || 480;
@@ -861,6 +880,7 @@
             recognition.maxAlternatives = 1;
 
             recognition.onstart = () => {
+                stopAudio(); // マイクが起動したときも先生のおしゃべりをピタッと止める
                 setChildStatus('listening', '【聞いてるよ、話してね…】');
                 btnMic.style.background = '#FF0055';
                 btnMic.style.color = '#FFF';
@@ -883,6 +903,7 @@
         }
 
         btnMic.addEventListener('click', () => {
+            stopAudio();
             if (!recognition) {
                 alert('お使いのブラウザは音声認識に対応していません。手書きやカメラを使ってね。');
                 return;
@@ -896,17 +917,23 @@
         });
 
         btnEasier.addEventListener('click', () => {
+            stopAudio(); // 途中でもボタンを押したら音声をストップしてすぐ分かりやすくし直す
             askGemini("さっきの説明を、もう少しゆっくり、別の簡単な例えを使って優しく教えて。", null, currentSessionTitle);
         });
 
-        btnSolved.addEventListener('click', () => { solvedModal.style.display = 'flex'; });
+        btnSolved.addEventListener('click', () => { 
+            stopAudio();
+            solvedModal.style.display = 'flex'; 
+        });
+
         btnAddQuestion.addEventListener('click', () => {
+            stopAudio();
             solvedModal.style.display = 'none';
             setChildStatus('ready', 'よし、さらに気になるところを教えてね！');
         });
 
         btnEndSession.addEventListener('click', () => {
-            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            stopAudio();
             solvedModal.style.display = 'none';
             previewContainer.style.display = 'none';
             visualContainer.style.display = 'none';
