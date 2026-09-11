@@ -3,38 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>カズ先生とまなぼう！ v11.4</title>
+    <title>カズ先生とまなぼう！ v11.4 [Splatoon Edition]</title>
     <style>
+        /* --- スプラトゥーン風ポップデザイン変数 --- */
         :root {
-            --primary: #4A90E2;
-            --secondary: #50E3C2;
-            --accent: #FF6B6B;
-            --background: #F7F9FC;
-            --text: #333333;
-            --kazu-green: #2ecc71;
+            --splat-yellow: #F6FC0B;
+            --splat-pink: #FD2A96;
+            --splat-cyan: #1AC8B4;
+            --splat-blue: #0231FB;
+            --splat-purple: #A700DB;
+            --splat-dark: #1b1b2f;
+            --splat-bg: #221a36;
+            --font-pop: 'Helvetica Neue', Arial, sans-serif;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-family: var(--font-pop);
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: var(--background);
-            color: var(--text);
+            background-color: var(--splat-bg);
+            color: #fff;
             display: flex;
             flex-direction: column;
             height: 100vh;
             overflow: hidden;
+            /* スプラトゥーン風のインクしぶき・ポップな斜めストライプパターン背景 */
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(253, 42, 150, 0.25) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(26, 200, 180, 0.25) 0%, transparent 40%),
+                repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 20px, transparent 20px, transparent 40px);
         }
 
         header {
-            background: white;
-            padding: 12px 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            background: #110d1a;
+            border-bottom: 4px solid var(--splat-yellow);
+            padding: 10px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -42,9 +50,11 @@
         }
 
         .header-title {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--primary);
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: var(--splat-yellow);
+            text-shadow: 2px 2px 0px var(--splat-pink);
+            letter-spacing: 1px;
         }
 
         .main-container {
@@ -52,6 +62,8 @@
             flex: 1;
             overflow: hidden;
             position: relative;
+            padding: 8px;
+            gap: 8px;
         }
 
         @media (min-width: 768px) {
@@ -65,101 +77,110 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 16px;
+            padding: 14px;
             overflow-y: auto;
-            background: white;
-            margin: 8px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            background: rgba(27, 23, 49, 0.9);
+            border: 3px solid var(--splat-cyan);
+            border-radius: 20px;
+            box-shadow: 0 6px 0px rgba(0,0,0,0.4);
         }
 
         .kazu-section {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 16px;
-            background: #EBF3FE;
+            margin-bottom: 12px;
+            background: rgba(2, 49, 251, 0.3);
+            border: 2px solid var(--splat-blue);
             padding: 12px;
-            border-radius: 12px;
+            border-radius: 14px;
         }
 
-        /* カズ先生の画像を完全固定 */
+        /* カズ先生の画像（「？」にならないよう確実なフォールバックとSVG直埋め込み対応） */
         .kazu-avatar {
-            width: 64px;
-            height: 64px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid var(--primary);
+            border: 3px solid var(--splat-yellow);
+            background: var(--splat-pink);
             flex-shrink: 0;
-            background: #fff;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.3);
         }
 
         .kazu-speech {
             font-size: 0.95rem;
             line-height: 1.4;
-            color: #2c3e50;
+            color: #fff;
+            font-weight: 700;
         }
 
+        /* 答えをすぐ教えず考えさせるコーチングテーマ表示（要約せず生入力をそのまま表示） */
         .theme-display {
-            background: #fff9e6;
-            border-left: 4px solid #f1c40f;
+            background: rgba(246, 252, 11, 0.15);
+            border: 2px dashed var(--splat-yellow);
             padding: 10px 14px;
-            border-radius: 0 8px 8px 0;
-            margin-bottom: 16px;
+            border-radius: 10px;
+            margin-bottom: 12px;
             font-size: 0.9rem;
-            color: #7f8c8d;
+            color: #ddd;
         }
 
         .theme-display strong {
-            color: #d35400;
+            color: var(--splat-yellow);
+            font-size: 1rem;
         }
 
         .chat-log {
             flex: 1;
-            border: 1px solid #e2e8f0;
+            border: 2px solid rgba(255,255,255,0.1);
             border-radius: 12px;
-            padding: 12px;
+            padding: 10px;
             overflow-y: auto;
-            margin-bottom: 16px;
-            background: #fafbfc;
+            margin-bottom: 10px;
+            background: rgba(0,0,0,0.3);
             display: flex;
             flex-direction: column;
             gap: 8px;
-            min-height: 150px;
+            min-height: 130px;
         }
 
         .chat-message {
             padding: 10px 14px;
-            border-radius: 12px;
+            border-radius: 14px;
             max-width: 85%;
             font-size: 0.95rem;
             line-height: 1.4;
+            font-weight: 700;
         }
 
         .chat-message.user {
-            background: var(--primary);
+            background: var(--splat-pink);
             color: white;
             align-self: flex-end;
             border-bottom-right-radius: 2px;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.2);
         }
 
         .chat-message.kazu {
-            background: #e2e8f0;
-            color: var(--text);
+            background: var(--splat-cyan);
+            color: #111;
             align-self: flex-start;
             border-bottom-left-radius: 2px;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.2);
         }
 
         .whiteboard-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            border: 2px dashed #cbd5e1;
-            border-radius: 12px;
+            border: 3px solid var(--splat-pink);
+            border-radius: 14px;
             position: relative;
             background: #fff;
-            min-height: 200px;
+            min-height: 180px;
             overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
         }
 
         canvas {
@@ -170,12 +191,13 @@
             display: block;
         }
 
+        /* 画面下部コントロールバー（絶対に消えない・ズレない固定レイアウト） */
         .controls {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             padding: 12px 16px;
-            background: white;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            background: #110d1a;
+            border-top: 4px solid var(--splat-pink);
             align-items: center;
             justify-content: center;
             flex-wrap: wrap;
@@ -183,87 +205,87 @@
         }
 
         button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: bold;
+            padding: 12px 22px;
+            border: 3px solid #fff;
+            border-radius: 25px;
+            font-size: 1.05rem;
+            font-weight: 900;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 6px;
-            transition: transform 0.1s, background 0.2s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.1s, filter 0.2s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.5);
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+            color: #fff;
         }
 
         button:active {
-            transform: scale(0.96);
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.5);
         }
 
         .btn-mic {
-            background-color: var(--accent);
-            color: white;
+            background-color: var(--splat-pink);
         }
 
         .btn-mic.recording {
-            background-color: #c0392b;
-            animation: pulse 1.5s infinite;
+            background-color: #ff0055;
+            animation: pulse-splat 1s infinite alternate;
         }
 
         .btn-clear {
-            background-color: #95a5a6;
-            color: white;
+            background-color: var(--splat-purple);
         }
 
         .btn-read {
-            background-color: var(--kazu-green);
-            color: white;
+            background-color: #2ecc71;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
-            100% { transform: scale(1.0; box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+        @keyframes pulse-splat {
+            0% { transform: scale(1); filter: brightness(1); }
+            100% { transform: scale(1.06); filter: brightness(1.2); }
         }
 
         .tools-bar {
             display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
+            justify-content: space-between;
             align-items: center;
+            margin-bottom: 6px;
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="header-title">✏️ カズ先生とまなぼう v11.4</div>
+        <div class="header-title">🦑 カズ先生とまなぼう！ v11.4</div>
     </header>
 
     <div class="main-container">
-        <!-- 左パネル：カズ先生と対話・テーマ -->
+        <!-- 左パネル：カズ先生と対話・コーチングフロー -->
         <div class="panel">
             <div class="kazu-section">
-                <!-- 指定のイラスト画像を完全に適用（フォールバック付き） -->
-                <img id="kazuAvatarImg" src="kazu_illust.png" alt="カズ先生" class="kazu-avatar" onerror="this.src='https://api.iconify.design/fluent-emoji:teacher-man.svg'">
+                <!-- カズ先生の画像（「？」エラーを完全に防ぐフォールバック実装） -->
+                <img id="kazuAvatarImg" src="kazu_illust.png" alt="カズ先生" class="kazu-avatar" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'48\' fill=\'%23FD2A96\' stroke=\'%23F6FC0B\' stroke-width=\'4\'/><text x=\'50\' y=\'65\' font-size=\'50\' text-anchor=\'middle\' fill=\'white\'>👨‍🏫</text></svg>';">
                 <div class="kazu-speech" id="kazuSpeechText">
-                    こんにちは！今日もいっしょに楽しくお勉強しようね！下のマイクボタンを押してお話ししてね。
+                    イカすね！今日も自分で考えて、答えを見つけていこうぜ！下のマイクを押して話してね。
                 </div>
             </div>
 
+            <!-- ユーザーの生発言を要約せずそのまま反映（コーチングの土台） -->
             <div class="theme-display">
-                いまのお題：<strong id="currentThemeText">自由な発言・質問</strong>
+                いまの相談・テーマ：<strong id="currentThemeText">自由な発言・質問（自分で考えてみよう）</strong>
             </div>
 
             <div class="chat-log" id="chatLog">
-                <div class="chat-message kazu">何か困ったことや、聞いてみたいことはあるかな？</div>
+                <div class="chat-message kazu">まずはキミがどう思ったか、教えてもらえるかな？</div>
             </div>
         </div>
 
-        <!-- 右パネル：ホワイトボードと操作ボタン -->
+        <!-- 右パネル：ホワイトボード（思考のキャンバス） -->
         <div class="panel">
             <div class="tools-bar">
-                <span style="font-size: 0.9rem; font-weight: bold; color: #64748b;">ホワイトボード（手書きエリア）</span>
+                <span style="font-size: 0.95rem; font-weight: 900; color: var(--splat-yellow);">✏️ ホワイトボード（かんがえをかこう）</span>
             </div>
             <div class="whiteboard-container">
                 <canvas id="whiteboard"></canvas>
@@ -271,7 +293,7 @@
         </div>
     </div>
 
-    <!-- 画面下部コントロールバー：ボタン消失防止・マイク安定化 -->
+    <!-- 画面下部コントロールバー：マイク・ボタン消失完全防止 -->
     <div class="controls">
         <button id="micBtn" class="btn-mic" onclick="toggleMicrophone()">
             <span>🎤</span> <span id="micBtnText">はなす</span>
@@ -285,9 +307,8 @@
     </div>
 
     <script>
-        // --- v11.4 修正ロジック ---
+        // --- v11.4 スプラトゥーン風・コーチング＆安定化ロジック ---
 
-        // 1. マイクの途切れ・強制終了を防ぐための安定化実装
         let recognition = null;
         let isRecording = false;
         const micBtn = document.getElementById('micBtn');
@@ -300,39 +321,35 @@
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
             recognition.lang = 'ja-JP';
-            recognition.interimResults = true; // 途切れ対策としてリアルタイム取得
-            recognition.continuous = false;    // 一文ごとに確実に処理
+            recognition.interimResults = true; // マイク途切れ対策のリアルタイム取得
+            recognition.continuous = false;
 
             recognition.onresult = (event) => {
                 let transcript = '';
                 for (let i = event.resultIndex; i < event.results.length; i++) {
                     transcript += event.results[i][0].transcript;
                 }
+                // 要約せず生データをそのままダイレクトに表示
                 currentThemeText.textContent = transcript;
             };
 
             recognition.onerror = (event) => {
                 console.warn('音声認識エラー:', event.error);
-                // 軽微なエラーでは停止状態にせず復帰できるようにする
-                if (event.error === 'no-speech') {
-                    // 音声なしエラーは無視して継続を試みる
-                    return;
-                }
+                if (event.error === 'no-speech') return;
                 stopMicrophoneState();
             };
 
             recognition.onend = () => {
                 if (isRecording) {
-                    // 自動で切れてしまった場合は再開を試みるか、状態を綺麗に落とす
                     stopMicrophoneState();
-                    if (currentThemeText.textContent && currentThemeText.textContent !== '自由な発言・質問') {
+                    if (currentThemeText.textContent && currentThemeText.textContent !== '自由な発言・質問（自分で考えてみよう）') {
                         appendUserMessage(currentThemeText.textContent);
-                        processKazuReply(currentThemeText.textContent);
+                        processKazuCoachingReply(currentThemeText.textContent);
                     }
                 }
             };
         } else {
-            alert('お使いのブラウザは音声認識に対応していません。テキスト入力をご利用ください。');
+            alert('お使いのブラウザは音声認識に対応していません。');
         }
 
         function toggleMicrophone() {
@@ -380,24 +397,25 @@
             kazuSpeechText.textContent = text;
         }
 
-        function processKazuReply(userInput) {
-            // カズ先生の返答シミュレーション
+        // ★ 答えを直接教えず、自分で考えさせるコーチング返答フロー
+        function processKazuCoachingReply(userInput) {
             setTimeout(() => {
-                let reply = `「${userInput}」だね！よく気がついたね、いっしょに調べてみようか！`;
+                let reply = `「${userInput}」に着目したんだね！それってどういうことか、もう少し詳しく教えてくれるかな？`;
                 if (userInput.includes('わからない') || userInput.includes('教えて')) {
-                    reply = '大丈夫だよ、ゆっくり一歩ずつ進めていこう！';
+                    reply = 'すぐには答えを教えないよ！まずはボードに思いついた絵や文字を書いてごらん、ヒントが見えてくるはず！';
+                } else if (userInput.includes('できた') || userInput.includes('わかった')) {
+                    reply = 'おっ、すごい！どんなふうに解決したか、ぜひ先生に教えて！';
                 }
                 appendKazuMessage(reply);
-            }, 600);
+            }, 700);
         }
 
-        // 2. ボタン消失問題の対策：DOMの再描画崩れを防ぐための安全なハンドリング
+        // ボタン・画面のズレ・消失防止のためのリサイズ保証
         window.addEventListener('resize', () => {
-            // 画面サイズ変更時にコントロールバーが隠れないようレイアウトを保証
             document.body.style.height = window.innerHeight + 'px';
         });
 
-        // 3. ホワイトボードの実装（Apple Pencil / タッチ対応）
+        // ホワイトボード（思考のキャンバス・Apple Pencil対応）
         const canvas = document.getElementById('whiteboard');
         const ctx = canvas.getContext('2d');
 
@@ -405,9 +423,9 @@
             const rect = canvas.parentElement.getBoundingClientRect();
             canvas.width = rect.width;
             canvas.height = rect.height;
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 4;
             ctx.lineCap = 'round';
-            ctx.strokeStyle = '#2c3e50';
+            ctx.strokeStyle = '#FD2A96'; // スプラトゥーン風のピンクのペン
         }
 
         window.addEventListener('resize', resizeCanvas);
