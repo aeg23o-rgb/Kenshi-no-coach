@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI学習コーチ - 翔太お兄さん (v11.20)</title>
+    <title>AI学習コーチ - かず先生 (v11.21)</title>
     <script type="importmap">
       {
         "imports": {
@@ -215,7 +215,7 @@
 
     <header>
         <div id="avatar-box">
-            <!-- 大学生のお兄さん風アイコン（スプラ風カラー背景） -->
+            <!-- かず先生のアイコン（スプラ風カラー背景） -->
             <svg class="character-avatar-img" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="48" fill="#1E3A8A" stroke="#CCFF00" stroke-width="4"/>
                 <path d="M 25 45 Q 35 20 65 25 Q 80 30 78 50 Q 70 38 50 35 Q 30 35 25 45 Z" fill="#1E293B"/>
@@ -225,8 +225,8 @@
                 <path d="M 45 62 Q 50 66 55 62" stroke="#D97706" stroke-width="2.5" fill="none" stroke-linecap="round"/>
             </svg>
             <div class="character-title">
-                <span class="character-name">翔太お兄さんのホワイトボード</span>
-                <span class="character-sub">小4 算数個別コーチ (v11.20)</span>
+                <span class="character-name">かず先生のホワイトボード</span>
+                <span class="character-sub">小4 算数個別コーチ (v11.21)</span>
             </div>
         </div>
         <div class="header-btns">
@@ -257,7 +257,7 @@
                             <path d="M 45 62 Q 50 66 55 62" stroke="#D97706" stroke-width="2.5" fill="none" stroke-linecap="round"/>
                         </svg>
                         <div style="font-size: 13px; color: var(--splat-yellow); text-align: left; font-weight: 900; line-height: 1.3;">
-                            翔太お兄さん<br><span id="teacher-mood" style="color:#FFF; font-size:12px; font-weight:bold;">“一緒にゆっくり考えていこうね。”</span>
+                            かず先生<br><span id="teacher-mood" style="color:#FFF; font-size:12px; font-weight:bold;">“一緒にゆっくり考えていこうね。”</span>
                         </div>
                     </div>
 
@@ -270,7 +270,7 @@
                         <img id="preview-img" alt="送信プレビュー">
                     </div>
                     
-                    <div class="board-text-title" id="board-title"><span>📝</span> 翔太お兄さんからのメッセージ</div>
+                    <div class="board-text-title" id="board-title"><span>📝</span> かず先生からのメッセージ</div>
                     <div class="board-text-body" id="board-speech">
                         こんにちは！下の<b>「🎙️ おはなし」</b>で話しかけるか、手書きやカメラで問題を教えてね。自分のペースで進めよう！
                     </div>
@@ -442,7 +442,7 @@
             } else if (mode === 'thinking') {
                 childStatusFrame.classList.add('thinking');
                 bannerIcon.innerText = '⏳';
-                bannerText.innerText = customText || '【翔太お兄さんが考えています…待っててね】';
+                bannerText.innerText = customText || '【かず先生が考えています…待っててね】';
             } else if (mode === 'listening') {
                 childStatusFrame.classList.add('listening');
                 bannerIcon.innerText = '🎙️';
@@ -506,7 +506,7 @@
             return formatted;
         }
 
-        // 確実な音声出力システム（フレーズごとに分割してプツ切れを防止）
+        // 音声出力システムの初期化（ブラウザ制限回避）
         let availableVoices = [];
         function initAudioEngine() {
             if (!('speechSynthesis' in window)) return;
@@ -521,11 +521,17 @@
                 if (window.speechSynthesis.paused) {
                     window.speechSynthesis.resume();
                 }
+                // ダミーの発話でロックを完全に解除
+                const dummy = new SpeechSynthesisUtterance("");
+                window.speechSynthesis.speak(dummy);
+                
                 window.removeEventListener('click', unlockAudio);
                 window.removeEventListener('touchstart', unlockAudio);
+                window.removeEventListener('keydown', unlockAudio);
             };
             window.addEventListener('click', unlockAudio);
             window.addEventListener('touchstart', unlockAudio);
+            window.addEventListener('keydown', unlockAudio);
         }
 
         function speakText(text) {
@@ -537,7 +543,6 @@
             cleanText = cleanText.replace(/[\$\#\*\_]/g, '').trim();
             if (!cleanText) return;
 
-            // 句読点や改行で文章を分割して滑らかに読み上げさせる
             const phrases = cleanText.split(/(?<=[。、！？\n])/).filter(p => p.trim().length > 0);
             if (phrases.length === 0) phrases.push(cleanText);
 
@@ -557,7 +562,7 @@
 
                 const utter = new SpeechSynthesisUtterance(phrase);
                 utter.lang = 'ja-JP';
-                utter.rate = 0.95; // 個別指導の先生のようにゆっくり優しく
+                utter.rate = 0.95; // 優しい個別指導のスピード
                 utter.pitch = 1.0; 
 
                 if (jaVoice) {
@@ -565,20 +570,21 @@
                 }
 
                 utter.onend = () => {
-                    setTimeout(playNextPhrase, 40);
+                    setTimeout(playNextPhrase, 30);
                 };
                 utter.onerror = () => {
-                    setTimeout(playNextPhrase, 40);
+                    setTimeout(playNextPhrase, 30);
                 };
 
                 window.speechSynthesis.speak(utter);
             }
 
-            setTimeout(playNextPhrase, 100);
+            // 即時実行を確実にするための少しの遅延
+            setTimeout(playNextPhrase, 50);
         }
 
         let typingTimer = null;
-        function typeWriterEffect(cleanHtml, callback) {
+        function typeWriterEffect(cleanHtml, plainTextForSpeech, callback) {
             if (typingTimer) clearInterval(typingTimer);
             boardSpeech.innerHTML = '';
 
@@ -595,6 +601,9 @@
                     if (callback) callback();
                 }
             }, 12);
+
+            // 音声発話はテキストのタイピング開始と同時に呼ぶことで確実に喋らせる
+            speakText(plainTextForSpeech);
         }
 
         function renderTimeline() {
@@ -612,7 +621,7 @@
                 
                 card.innerHTML = `
                     <div class="tl-user">🗣️ きみ: ${turn.userText}</div>
-                    <div class="tl-content">📝 翔太: ${turn.aiPlain.substring(0, 25)}...</div>
+                    <div class="tl-content">📝 かず: ${turn.aiPlain.substring(0, 25)}...</div>
                 `;
                 card.onclick = () => { jumpToTurn(origIndex); };
                 timelineContainer.appendChild(card);
@@ -638,7 +647,7 @@
 
         function saveCurrentSession() {
             if (chatHistory.length === 0) return;
-            const sessions = JSON.parse(localStorage.getItem('shota_sessions_v11_20') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kaz_sessions_v11_21') || '{}');
             sessions[currentSessionId] = {
                 title: currentSessionTitle,
                 updatedAt: new Date().toLocaleString(),
@@ -646,12 +655,12 @@
                 dialogTurns: dialogTurns,
                 lastSpeech: boardSpeech.innerHTML
             };
-            localStorage.setItem('shota_sessions_v11_20', JSON.stringify(sessions));
+            localStorage.setItem('kaz_sessions_v11_21', JSON.stringify(sessions));
         }
 
         function loadSessionList() {
             historyListContainer.innerHTML = '';
-            const sessions = JSON.parse(localStorage.getItem('shota_sessions_v11_20') || '{}');
+            const sessions = JSON.parse(localStorage.getItem('kaz_sessions_v11_21') || '{}');
             const keys = Object.keys(sessions);
             
             if (keys.length === 0) {
@@ -700,7 +709,7 @@
 
             try {
                 const ai = new GoogleGenAI({ apiKey: apiKey });
-                const systemInstruction = `あなたは個別指導塾で小学生（主に小4算数）に教えている、とても優しくて親しみやすい大学生のお兄さん先生「翔太お兄さん」です。
+                const systemInstruction = `あなたは個別指導塾で小学生（主に小4算数）に教えている、とても優しくて親しみやすい大学生のお兄さん先生「かず先生」です。
 口調は「〜だよ」「〜してみようか」「大丈夫、ゆっくりやろう」「うんうん、よく気づけたね」といった、個別指導の席で隣に座って寄り添ってくれるような、穏やかで優しい丁寧語まじりの語りかけにしてください。怒ったりプレッシャーをかけたりせず、絶対に答えを最初から教えず、簡単なステップに分けてヒントを出してください。
 使える漢字は小4まで。小5以上は読み仮名をつけるかひらがなにする。
 【絶対のルール】：回答の中に「$」記号やLaTeX形式の数式コード（例: \\times や \\div）を絶対に出力しないでください。掛け算は「×」、割り算は「÷」の記号を使ってプレーンテキストで書いてください。
@@ -777,11 +786,9 @@
                     renderVisualDiagram(diagType);
                     setTeacherMood('一緒にゆっくり考えていこうね。');
                     
-                    typeWriterEffect(formattedHtml, () => {
+                    typeWriterEffect(formattedHtml, plainReply, () => {
                         setChildStatus('ready');
                     });
-                    
-                    speakText(plainReply);
 
                     saveCurrentSession();
                     btnEasier.disabled = false;
